@@ -2,19 +2,25 @@ import URL, { URLSearchParams } from 'url'
 import qs from 'querystring'
 import axios from 'axios'
 import Router from 'next/router'
+import { connect } from 'react-redux'
+
+import { setAccessToken, getUserProfile } from '../../actions/authActions'
 
 const SPOTIFY_ACCESS_TOKEN_URL = "https://accounts.spotify.com/api/token"
 
-export default class AuthLoginCallback extends React.Component {
+class AuthLoginCallback extends React.Component {
   componentDidMount () {
-    const { accessToken, refreshToken, error } = this.props
+    const { setAccessToken, getUserProfile, accessToken, refreshToken, expiresAt, error } = this.props
     if (error) {
       return
     }
+    setAccessToken(accessToken, refreshToken, expiresAt)
     window.localStorage.setItem("auth:access", accessToken)
     window.localStorage.setItem("auth:refresh", refreshToken)
-    Router.replace("/")
+    getUserProfile()
+      .then(() => Router.replace("/"))
   }
+
 
   render () {
     const { accessToken, refreshToken, error } = this.props
@@ -56,11 +62,12 @@ export async function getServerSideProps({ req, res }) {
       process.env.SPOTIFY_REDIRECT_URI,
       params.get("code")
     )
-    console.log(response)
+    const nowMs = Date.now()
     return {
       props: {
         accessToken: response.data.access_token,
         refreshToken: response.data.refresh_token,
+        expiresAt: nowMs + (response.data.expires_in * 1000),
       },
     }
   } catch (e) {
@@ -68,6 +75,13 @@ export async function getServerSideProps({ req, res }) {
     return {props: {error: `error retrieving Spotify access token: ${e.message}`}}
   }
 }
+
+const mapDispatchToProps = {
+  setAccessToken,
+  getUserProfile,
+}
+
+export default connect(null, mapDispatchToProps)(AuthLoginCallback)
 
 /**
  * TODO: This should be implemented properly :)
