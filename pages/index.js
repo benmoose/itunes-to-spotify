@@ -1,8 +1,9 @@
 import {connect} from 'react-redux'
+import Nav from '../components/nav'
 
-const Index = (props) => {
+const Index = ({ auth }) => {
   return (
-    <div />
+    <Nav username={auth.username}/>
   )
 }
 

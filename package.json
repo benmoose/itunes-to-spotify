@@ -11,8 +11,10 @@
   "author": "Ben Hadfield <benjohnhadfield@gmail.com>",
   "license": "ISC",
   "dependencies": {
+    "@blueprintjs/core": "^3.30.0",
     "axios": "^0.19.2",
     "next": "^9.4.4",
+    "normalize.css": "^8.0.1",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
     "react-redux": "^7.2.0",
