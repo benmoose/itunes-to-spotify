@@ -1,7 +1,7 @@
 import {connect} from 'react-redux'
 import Nav from '../components/nav'
 
-const Index = ({ auth }) => {
+const IndexPage = (props) => {
   return (
     <Nav username={auth.username}/>
   )
@@ -13,4 +13,4 @@ const mapStateToProps = state => {
   }
 }
 
-export default connect(mapStateToProps)(Index)
+export default connect(mapStateToProps)(IndexPage)

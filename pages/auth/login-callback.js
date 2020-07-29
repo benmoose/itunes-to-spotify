@@ -8,7 +8,7 @@ import { setAccessToken, getUserProfile } from '../../actions/authActions'
 
 const SPOTIFY_ACCESS_TOKEN_URL = "https://accounts.spotify.com/api/token"
 
-class AuthLoginCallback extends React.Component {
+class AuthLoginCallbackPage extends React.Component {
   componentDidMount () {
     const { setAccessToken, getUserProfile, accessToken, refreshToken, expiresAt, error } = this.props
     if (error) {
@@ -81,7 +81,7 @@ const mapDispatchToProps = {
   getUserProfile,
 }
 
-export default connect(null, mapDispatchToProps)(AuthLoginCallback)
+export default connect(null, mapDispatchToProps)(AuthLoginCallbackPage)
 
 /**
  * TODO: This should be implemented properly :)
