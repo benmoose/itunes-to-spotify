@@ -7,4 +7,4 @@ class ConvertPage extends React.Component {
   }
 }
 
-export default ConvertPage
+export default connect()(ConvertPage)

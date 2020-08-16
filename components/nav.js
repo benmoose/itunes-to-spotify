@@ -2,19 +2,22 @@ import {
   Alignment,
   Button,
   Classes,
+  FileInput,
   Navbar,
   NavbarDivider,
   NavbarGroup,
   NavbarHeading,
 } from '@blueprintjs/core'
 
-export default ({ username }) => {
+export default ({ username, onInputChange }) => {
   return (
     <Navbar>
       <NavbarGroup>
         <NavbarHeading>iTunes to Spotify</NavbarHeading>
         <NavbarDivider />
-        <Button className={Classes.MINIMAL} icon="upload" text="Upload"/>
+        <form encType="multipart/form-data">
+          <FileInput buttonText="Upload" onInputChange={onInputChange} />
+        </form>
       </NavbarGroup>
       <NavbarGroup align={Alignment.RIGHT}>
         <NavbarDivider />
