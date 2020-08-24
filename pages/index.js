@@ -1,7 +1,9 @@
 import {connect} from 'react-redux'
 import Papa from 'papaparse'
+import { sha256 } from 'js-sha256'
 import Nav from '../components/nav'
 import PlaylistDisplay from '../components/playlistDisplay'
+import { trackSearch } from '../actions/playlistActions'
 
 const displayHeaders = ["Name", "Artist", "Year", "Time"]
 
@@ -9,18 +11,20 @@ class IndexPage extends React.Component {
   state = {
     uploadText: "",
     uploadData: null,
+    uploadTrackIDs: null,
     uploadError: null,
     spotifySearchStatus: null,
   }
 
   render () {
     const { auth } = this.props
-    const {uploadData, spotifySearchStatus} = this.state
+    const {uploadData, uploadTrackIDs, spotifySearchStatus} = this.state
     return (
       <>
         <Nav username={auth.username} onInputChange={this.readTextFileToState} />
         {this.state.uploadData && this.state.uploadData.length > 0
-          ? <PlaylistDisplay dataHeader={uploadData[0]} dataRows={uploadData.slice(1)} rowStatus={spotifySearchStatus} />
+          // ? <PlaylistDisplay headerRow={uploadData[uploadTrackIDs[0]]} trackIDs={uploadTrackIDs.slice(1)} tracks={uploadData} rowStatus={spotifySearchStatus} />
+          ? <p>:)</p>
           : <p>Upload a file</p>
       }
       </>
@@ -59,19 +63,36 @@ class IndexPage extends React.Component {
     }
     const headerRow = parseResult.data[0]
     const indices = getRowIndexes(displayHeaders, headerRow)
+    const trackIDs = []
     const data = parseResult.data.map(row => {
       const rowEmpty = !row.reduce((acc, el) => acc || !!el, false)
+      if (!rowEmpty) {
+        trackIDs.push(trackIDFromRow(row))
+      }
       return rowEmpty ? null : indices.map(i => row[i])
     }).filter(row => row !== null)
-    this.setState({uploadData: data, uploadError: null}, this.performSpotifySearchOnPLaylistData)
+    const dataByTrackID = data.reduce((acc, track, i) => {
+      acc[trackIDs[i]] = track
+      return acc
+    }, {})
+    this.setState({
+      uploadData: dataByTrackID,
+      uploadError: null,
+      uploadTrackIDs: trackIDs,
+    }, this.performSpotifySearchOnPLaylistData)
   }
 
   performSpotifySearchOnPLaylistData = () => {
-    if (!this.state.uploadData) {
+    const {uploadData, uploadTrackIDs} = this.state
+    if (!uploadData) {
       return
     }
-    const spotifySearchStatus = this.state.uploadData.map(row => ({isFetching: true}))
-    this.setState({ spotifySearchStatus })
+
+    uploadTrackIDs.map((tID) => {
+      const row = uploadData[tID]
+      const trackID = trackIDFromRow(row)
+      this.props.trackSearch(trackID, `${row[0]} ${row[1]}`)
+    })
   }
 
   setError (uploadError) {
@@ -90,4 +111,14 @@ const mapStateToProps = ({auth}) => {
   return { auth }
 }
 
-export default connect(mapStateToProps)(IndexPage)
+const trackIDFromRow = (row) => {
+  return sha256(
+    row.reduce((acc, el) => {
+      return acc === "" ? el : acc + `.${el}`
+    }, "")
+  )
+}
+
+const mapDispatchToProps = { trackSearch }
+
+export default connect(mapStateToProps, mapDispatchToProps)(IndexPage)
