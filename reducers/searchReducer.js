@@ -1,4 +1,4 @@
-import { TRACK_SEARCH_REQUEST, TRACK_SEARCH_SUCCESS, TRACK_SEARCH_FAILURE } from '../actions/playlistActions'
+import { TRACK_SEARCH_REQUEST, TRACK_SEARCH_SUCCESS, TRACK_SEARCH_FAILURE } from '../actions/searchActions'
 
 const initialState = {}
 

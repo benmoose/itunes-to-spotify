@@ -2,8 +2,8 @@ import {connect} from 'react-redux'
 import Papa from 'papaparse'
 import { sha256 } from 'js-sha256'
 import Nav from '../components/nav'
-import PlaylistDisplay from '../components/playlistDisplay'
-import { trackSearch } from '../actions/playlistActions'
+// import PlaylistDisplay from '../components/playlistDisplay'
+import { trackSearch } from '../actions/searchActions'
 
 const displayHeaders = ["Name", "Artist", "Year", "Time"]
 
