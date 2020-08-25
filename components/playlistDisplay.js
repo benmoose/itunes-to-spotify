@@ -1,23 +1,34 @@
-import {HTMLTable} from '@blueprintjs/core'
+import {HTMLTable, Spinner} from '@blueprintjs/core'
+import ItemSearchResults from './itemSearchResults'
 
-export default ({ headerRow, tracks }) => {
-  console.log("--", headerRow, tracks)
+export default ({ headerRow, tracks, trackOrder, searchResults, searchDB, onSearchResultClick }) => {
   return (
     <HTMLTable condensed>
       <thead>
         <tr>
           {headerRow.map((el, i) => <th key={`${i}-${el}`}>{el}</th>)}
-          <th>Status</th>
+          <th>Spotify</th>
         </tr>
       </thead>
       <tbody>
-        {tracks.map((row, i) => (
-          <tr key={i}>
-            {row.map((el, i) => <td key={`${i}-${el}`}>{el}</td>)}
-            <td>Searching...</td>
+        {trackOrder.map(id => (
+          <tr key={id}>
+            {tracks[id].map(el => <td key={`${id}-${el}`}>{el}</td>)}
+            <td>{
+            isTrackFetching(searchResults[id])
+              ? <Spinner size={15} />
+              : <ItemSearchResults onSearchResultClick={onSearchResultClick(id)} searchResults={searchResults[id]} searchDB={searchDB} />
+            }</td>
           </tr>
         ))}
       </tbody>
     </HTMLTable>
   )
+}
+
+function isTrackFetching(searchItem) {
+  if (!searchItem) {
+    return false
+  }
+  return !!searchItem.isFetching
 }

@@ -1,4 +1,9 @@
-import { TRACK_SEARCH_REQUEST, TRACK_SEARCH_SUCCESS, TRACK_SEARCH_FAILURE } from '../actions/searchActions'
+import {
+  TRACK_SEARCH_REQUEST,
+  TRACK_SEARCH_SUCCESS,
+  TRACK_SEARCH_FAILURE,
+  SET_SELECTED_SEARCH_RESULT_TRACK,
+} from '../actions/searchActions'
 
 const initialState = {}
 
@@ -20,6 +25,14 @@ export default (state = initialState, action) => {
         error,
         isFetching: false,
       }}
+    case SET_SELECTED_SEARCH_RESULT_TRACK:
+      return {
+        ...state,
+        [action.payload.trackID]: {
+          ...state[action.payload.trackID],
+          selectedSearchResultID: action.payload.searchResultID,
+        }
+      }
   }
   return state
 }

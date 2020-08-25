@@ -13,10 +13,13 @@
   "dependencies": {
     "@blueprintjs/core": "^3.30.0",
     "axios": "^0.19.2",
+    "install": "^0.13.0",
     "js-sha256": "^0.9.0",
     "next": "^9.4.4",
+    "next-images": "^1.4.1",
     "normalize.css": "^8.0.1",
     "normalizr": "^3.6.0",
+    "npm": "^6.14.8",
     "papaparse": "^5.2.0",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
@@ -25,5 +28,6 @@
     "redux-logger": "^3.0.6",
     "redux-thunk": "^2.3.0",
     "shortid": "^2.2.15"
-  }
+  },
+  "devDependencies": {}
 }

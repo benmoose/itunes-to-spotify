@@ -3,17 +3,17 @@ import Papa from 'papaparse'
 import { sha256 } from 'js-sha256'
 import Nav from '../components/nav'
 import PlaylistDisplay from '../components/playlistDisplay'
-import { trackSearch } from '../actions/searchActions'
+import { trackSearch, setSelectedSearchResultTrack } from '../actions/searchActions'
 import {
   setTrackOrder,
   setTracks
 } from '../actions/uploadActions'
 
-const displayHeaders = ["Name", "Artist", "Year", "Time"]
+const displayHeaders = ["Name", "Artist", "Year"]
 
 class IndexPage extends React.Component {
   render () {
-    const { auth, upload } = this.props
+    const { auth, upload, search, db, setSelectedSearchResultTrack } = this.props
     const rowData = upload.trackOrder.map(id => upload.tracks[id])
     const hasRowData = rowData.filter(r => !!r).length > 0
     return (
@@ -21,8 +21,12 @@ class IndexPage extends React.Component {
         <Nav username={auth.username} onInputChange={this.readTextFileToState} />
         {hasRowData
           && <PlaylistDisplay
+            onSearchResultClick={trackID => searchResultID => setSelectedSearchResultTrack(trackID, searchResultID)}
             headerRow={displayHeaders}
-            tracks={upload.trackOrder.map(id => upload.tracks[id])}
+            trackOrder={upload.trackOrder}
+            tracks={upload.tracks}
+            searchResults={search}
+            searchDB={db.tracks}
           />
         }
       </>
@@ -80,7 +84,11 @@ class IndexPage extends React.Component {
       return
     }
 
-    upload.trackOrder.map(tID => this.props.trackSearch(tID, `${upload.tracks[tID][0]} ${upload.tracks[tID][1]}`))
+    upload.trackOrder.map(tID => {
+      const cleanName = cleanNameForSpotifySearch(upload.tracks[tID][0])
+      const artistName = cleanNameForSpotifySearch(upload.tracks[tID][1])
+      this.props.trackSearch(tID, cleanName, artistName)
+    })
   }
 
   setError (uploadError) {
@@ -103,10 +111,18 @@ const trackIDFromRow = (row) => {
   )
 }
 
-const mapStateToProps = ({auth, search, upload}) => {
-  return { auth, search, upload }
+const cleanNameForSpotifySearch = (name) => {
+  const bracketMatch = /\(([^)]+)\)/
+  return name
+    .replace(bracketMatch, " ")
+    .replace("&", " ")
+    .trim()
 }
 
-const mapDispatchToProps = { trackSearch, setTrackOrder, setTrackOrder, setTracks }
+const mapStateToProps = ({auth, search, upload, db}) => {
+  return { auth, search, upload, db }
+}
+
+const mapDispatchToProps = { trackSearch, setTrackOrder, setTrackOrder, setTracks, setSelectedSearchResultTrack }
 
 export default connect(mapStateToProps, mapDispatchToProps)(IndexPage)
