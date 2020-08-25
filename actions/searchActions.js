@@ -30,7 +30,7 @@ const trackSearchFailure = (trackID, error) => {
   }
 }
 export const SET_TRACKS = trackPrefix + "SET_TRACKS"
-const setTracks = (tracks) => ({
+export const setTracks = (tracks) => ({
   type: SET_TRACKS,
   payload: { tracks }
 })

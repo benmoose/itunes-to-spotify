@@ -1,11 +1,13 @@
 import { combineReducers } from 'redux'
 
 import authReducer from './authReducer'
-import searchReducer from './searchReducer'
 import dbReducer from './dbReducer'
+import searchReducer from './searchReducer'
+import uploadReducer from './uploadReducer'
 
 export default combineReducers({
   auth: authReducer,
-  search: searchReducer,
   db: dbReducer,
+  search: searchReducer,
+  upload: uploadReducer,
 })
