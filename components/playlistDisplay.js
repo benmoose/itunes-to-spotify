@@ -13,7 +13,7 @@ export default ({ headerRow, tracks, trackOrder, searchResults, searchDB, onSear
       <tbody>
         {trackOrder.map(id => (
           <tr key={id}>
-            {tracks[id].map(el => <td key={`${id}-${el}`}>{el}</td>)}
+            {tracks[id] && tracks[id].map(el => <td key={`${id}-${el}`}>{el}</td>)}
             <td>{
             isTrackFetching(searchResults[id])
               ? <Spinner size={15} />

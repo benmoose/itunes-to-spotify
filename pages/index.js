@@ -3,6 +3,7 @@ import Papa from 'papaparse'
 import { sha256 } from 'js-sha256'
 import Nav from '../components/nav'
 import PlaylistDisplay from '../components/playlistDisplay'
+import CreatePlaylistFooter from '../components/createPlaylistFooter'
 import { trackSearch, setSelectedSearchResultTrack } from '../actions/searchActions'
 import {
   setTrackOrder,
@@ -14,12 +15,13 @@ const displayHeaders = ["Name", "Artist", "Year"]
 class IndexPage extends React.Component {
   render () {
     const { auth, upload, search, db, setSelectedSearchResultTrack } = this.props
-    const rowData = upload.trackOrder.map(id => upload.tracks[id])
-    const hasRowData = rowData.filter(r => !!r).length > 0
+    const rowData = upload.trackOrder.map(id => upload.tracks[id]).filter(r => !!r)
+    const searchResults = upload.trackOrder.map(id => search[id]).filter(r => !!r)
+    const trackWithSearchResults = searchResults.map(r => r.searchResultIDs.length > 0).filter(r => !!r)
     return (
       <>
         <Nav username={auth.username} onInputChange={this.readTextFileToState} />
-        {hasRowData
+        {rowData.length > 0
           && <PlaylistDisplay
             onSearchResultClick={trackID => searchResultID => setSelectedSearchResultTrack(trackID, searchResultID)}
             headerRow={displayHeaders}
@@ -28,6 +30,9 @@ class IndexPage extends React.Component {
             searchResults={search}
             searchDB={db.tracks}
           />
+        }
+        {searchResults.length > 0
+          && <CreatePlaylistFooter itemCount={trackWithSearchResults.length} />
         }
       </>
     )
