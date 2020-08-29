@@ -1,0 +1,7 @@
+.menuItem {
+  display: flex;
+
+}
+.menuItem > li {
+  flex: 1;
+}

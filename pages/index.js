@@ -3,6 +3,7 @@ import {connect} from 'react-redux'
 import Papa from 'papaparse'
 import { sha256 } from 'js-sha256'
 import Nav from '../components/nav'
+import Page from '../components/page'
 import PlaylistDisplay from '../components/playlistDisplay'
 import CreatePlaylistFooter from '../components/createPlaylistFooter'
 import { trackSearch, setSelectedSearchResultTrack } from '../actions/searchActions'
@@ -23,29 +24,30 @@ class IndexPage extends React.Component {
     return (
       <>
         <Nav username={auth.username} onFileSelect={this.readTextFileToState} onLoginClick={this.redirectToLoginPage} />
-        {rowData.length > 0
-          && <PlaylistDisplay
-            onSearchResultClick={trackID => searchResultID => setSelectedSearchResultTrack(trackID, searchResultID)}
-            headerRow={displayHeaders}
-            trackOrder={upload.trackOrder}
-            tracks={upload.tracks}
-            searchResults={search}
-            searchDB={db.tracks}
-          />
-        }
-        {searchResults.length > 0
-          && <CreatePlaylistFooter
-            itemCount={trackWithSearchResults.length}
-            createPlaylistAction={this.createPlaylistFromState}
-          />
-        }
+        <Page>
+          {rowData.length > 0
+            && <PlaylistDisplay
+              onSearchResultClick={trackID => searchResultID => setSelectedSearchResultTrack(trackID, searchResultID)}
+              headerRow={displayHeaders}
+              trackOrder={upload.trackOrder}
+              tracks={upload.tracks}
+              searchResults={search}
+              searchDB={db.tracks}
+            />
+          }
+          {searchResults.length > 0
+            && <CreatePlaylistFooter
+              itemCount={trackWithSearchResults.length}
+              createPlaylistAction={this.createPlaylistFromState}
+            />
+          }
+        </Page>
       </>
     )
   }
 
   redirectToLoginPage = () => {
-    const { router } = this.props
-    router.push("/api/login")
+    this.props.router.push("/api/login")
   }
 
   createPlaylistFromState = () => {

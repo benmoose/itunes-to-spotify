@@ -12,6 +12,7 @@
   "license": "ISC",
   "dependencies": {
     "@blueprintjs/core": "^3.30.0",
+    "@blueprintjs/select": "^3.13.7",
     "axios": "^0.19.2",
     "install": "^0.13.0",
     "js-sha256": "^0.9.0",
