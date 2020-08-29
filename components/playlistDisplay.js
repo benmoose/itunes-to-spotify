@@ -1,4 +1,4 @@
-import {HTMLTable, Spinner, Text} from '@blueprintjs/core'
+import {HTMLTable, Spinner, Text, Colors} from '@blueprintjs/core'
 import ItemSearchResults from './itemSearchResults'
 
 export default ({ headerRow, tracks, trackOrder, searchResults, searchDB, onSearchResultClick }) => {
@@ -6,13 +6,15 @@ export default ({ headerRow, tracks, trackOrder, searchResults, searchDB, onSear
     <HTMLTable condensed striped style={{width: "100%"}}>
       <thead>
         <tr>
+          <th></th>
           {headerRow.map((el, i) => <th key={`${i}-${el}`}>{el}</th>)}
           <th>Spotify</th>
         </tr>
       </thead>
       <tbody>
-        {trackOrder.map(id => (
+        {trackOrder.map((id, i) => (
           <tr key={id}>
+            <td key={`${i}-${id}`} style={{color: Colors.GRAY1}}>{i+1}</td>
             {tracks[id] && tracks[id].map(el => <td key={`${id}-${el}`}><Text ellipsize>{el}</Text></td>)}
             <td>{
             isTrackFetching(searchResults[id])
