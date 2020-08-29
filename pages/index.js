@@ -1,3 +1,4 @@
+import { withRouter } from 'next/router'
 import {connect} from 'react-redux'
 import Papa from 'papaparse'
 import { sha256 } from 'js-sha256'
@@ -21,7 +22,7 @@ class IndexPage extends React.Component {
     const trackWithSearchResults = searchResults.map(r => r.searchResultIDs && r.searchResultIDs.length > 0).filter(r => !!r)
     return (
       <>
-        <Nav username={auth.username} onInputChange={this.readTextFileToState} />
+        <Nav username={auth.username} onFileSelect={this.readTextFileToState} onLoginClick={this.redirectToLoginPage} />
         {rowData.length > 0
           && <PlaylistDisplay
             onSearchResultClick={trackID => searchResultID => setSelectedSearchResultTrack(trackID, searchResultID)}
@@ -42,8 +43,13 @@ class IndexPage extends React.Component {
     )
   }
 
+  redirectToLoginPage = () => {
+    const { router } = this.props
+    router.push("/api/login")
+  }
+
   createPlaylistFromState = () => {
-    const { upload, search, db, playlist, createPlaylist } = this.props
+    const { upload, search, db, createPlaylist } = this.props
     const uploadedTrackIDs = upload.trackOrder
     const spotifySelectedTrackIDs = uploadedTrackIDs.map(id => search[id] && search[id].selectedSearchResultID).filter(r => !!r)
     const spotifyURIs = spotifySelectedTrackIDs.map(spotifyID => db.tracks[spotifyID] && db.tracks[spotifyID].uri).filter(r => !!r)
@@ -152,4 +158,4 @@ const mapDispatchToProps = {
   createPlaylist,
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(IndexPage)
+export default connect(mapStateToProps, mapDispatchToProps)(withRouter(IndexPage))
