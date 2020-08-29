@@ -5,6 +5,7 @@ import Nav from '../components/nav'
 import PlaylistDisplay from '../components/playlistDisplay'
 import CreatePlaylistFooter from '../components/createPlaylistFooter'
 import { trackSearch, setSelectedSearchResultTrack } from '../actions/searchActions'
+import { createPlaylist } from '../actions/playlistActions'
 import {
   setTrackOrder,
   setTracks
@@ -17,7 +18,7 @@ class IndexPage extends React.Component {
     const { auth, upload, search, db, setSelectedSearchResultTrack } = this.props
     const rowData = upload.trackOrder.map(id => upload.tracks[id]).filter(r => !!r)
     const searchResults = upload.trackOrder.map(id => search[id]).filter(r => !!r)
-    const trackWithSearchResults = searchResults.map(r => r.searchResultIDs.length > 0).filter(r => !!r)
+    const trackWithSearchResults = searchResults.map(r => r.searchResultIDs && r.searchResultIDs.length > 0).filter(r => !!r)
     return (
       <>
         <Nav username={auth.username} onInputChange={this.readTextFileToState} />
@@ -32,10 +33,24 @@ class IndexPage extends React.Component {
           />
         }
         {searchResults.length > 0
-          && <CreatePlaylistFooter itemCount={trackWithSearchResults.length} />
+          && <CreatePlaylistFooter
+            itemCount={trackWithSearchResults.length}
+            createPlaylistAction={this.createPlaylistFromState}
+          />
         }
       </>
     )
+  }
+
+  createPlaylistFromState = () => {
+    const { upload, search, db, playlist, createPlaylist } = this.props
+    const uploadedTrackIDs = upload.trackOrder
+    const spotifySelectedTrackIDs = uploadedTrackIDs.map(id => search[id] && search[id].selectedSearchResultID).filter(r => !!r)
+    const spotifyURIs = spotifySelectedTrackIDs.map(spotifyID => db.tracks[spotifyID] && db.tracks[spotifyID].uri).filter(r => !!r)
+    if (spotifyURIs.length === 0) {
+      return
+    }
+    return createPlaylist({name: "Mary is sexy af", trackURIs: spotifyURIs, description: "A freshly converted iTunes playlist for ya"})
   }
 
   readTextFileToState = (event) => {
@@ -128,6 +143,13 @@ const mapStateToProps = ({auth, search, upload, db}) => {
   return { auth, search, upload, db }
 }
 
-const mapDispatchToProps = { trackSearch, setTrackOrder, setTrackOrder, setTracks, setSelectedSearchResultTrack }
+const mapDispatchToProps = {
+  trackSearch,
+  setTrackOrder,
+  setTrackOrder,
+  setTracks,
+  setSelectedSearchResultTrack,
+  createPlaylist,
+}
 
 export default connect(mapStateToProps, mapDispatchToProps)(IndexPage)
