@@ -5,10 +5,12 @@ import {
   ADD_TRACKS_TO_PLAYLIST_REQUEST,
   ADD_TRACKS_TO_PLAYLIST_SUCCESS,
   ADD_TRACKS_TO_PLAYLIST_FAILURE,
+  SET_PLAYLIST_NAME,
 } from '../actions/playlistActions'
 
 const initialState = {
   isFetching: false,
+  playlistName: ""
 }
 
 export default (state = initialState, action) => {
@@ -24,6 +26,8 @@ export default (state = initialState, action) => {
     case ADD_TRACKS_TO_PLAYLIST_SUCCESS:
     case ADD_TRACKS_TO_PLAYLIST_FAILURE:
       return {...state, isFetching: false}
+    case SET_PLAYLIST_NAME:
+      return {...state, playlistName: action.payload}
   }
   return state
 }

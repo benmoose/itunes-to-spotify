@@ -1,5 +1,4 @@
 import axios from 'axios'
-import {normalize, schema} from 'normalizr'
 
 const SPOTIFY_TRACK_SEARCH_ENDPOINT = userID => `https://api.spotify.com/v1/users/${userID}/playlists`
 const SPOTIFY_ADD_TRACKS_ENDPOINT = playlistID => `https://api.spotify.com/v1/playlists/${playlistID}/tracks`
@@ -63,6 +62,12 @@ const addTracksToPlaylist = (playlistID, trackURIs) => {
       .catch(err => dispatch(addTrackToPlaylistFailure(err)))
   }
 }
+
+export const SET_PLAYLIST_NAME = playlistPrefix + "SET_PLAYLIST_NAME"
+export const setPlaylistName = (payload) => ({
+  type: SET_PLAYLIST_NAME,
+  payload,
+})
 
 const getAccessToken = (state) => {
   return state.auth.accessToken

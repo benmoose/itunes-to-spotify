@@ -6,7 +6,7 @@ import Nav from '../components/nav'
 import PlaylistDisplay from '../components/playlistDisplay'
 import CreatePlaylistFooter from '../components/createPlaylistFooter'
 import { trackSearch, setSelectedSearchResultTrack } from '../actions/searchActions'
-import { createPlaylist } from '../actions/playlistActions'
+import { createPlaylist, setPlaylistName } from '../actions/playlistActions'
 import {
   setTrackOrder,
   setTracks
@@ -16,7 +16,7 @@ const displayHeaders = ["Name", "Artist", "Year"]
 
 class IndexPage extends React.Component {
   render () {
-    const { auth, upload, search, db, setSelectedSearchResultTrack } = this.props
+    const { auth, upload, search, db, playlist, setSelectedSearchResultTrack, setPlaylistName } = this.props
     const rowData = upload.trackOrder.map(id => upload.tracks[id]).filter(r => !!r)
     const searchResults = upload.trackOrder.map(id => search[id]).filter(r => !!r)
     const trackWithSearchResults = searchResults.map(r => r.searchResultIDs && r.searchResultIDs.length > 0).filter(r => !!r)
@@ -35,6 +35,9 @@ class IndexPage extends React.Component {
         }
         {searchResults.length > 0
           && <CreatePlaylistFooter
+            loading={playlist.isFetching}
+            playlistName={playlist.playlistName}
+            onPlaylistNameChange={setPlaylistName}
             itemCount={trackWithSearchResults.length}
             createPlaylistAction={this.createPlaylistFromState}
           />
@@ -48,14 +51,17 @@ class IndexPage extends React.Component {
   }
 
   createPlaylistFromState = () => {
-    const { upload, search, db, createPlaylist } = this.props
+    const { upload, search, db, playlist, createPlaylist } = this.props
     const uploadedTrackIDs = upload.trackOrder
     const spotifySelectedTrackIDs = uploadedTrackIDs.map(id => search[id] && search[id].selectedSearchResultID).filter(r => !!r)
     const spotifyURIs = spotifySelectedTrackIDs.map(spotifyID => db.tracks[spotifyID] && db.tracks[spotifyID].uri).filter(r => !!r)
     if (spotifyURIs.length === 0) {
       return
     }
-    return createPlaylist({name: "Mary is sexy af", trackURIs: spotifyURIs, description: "A freshly converted iTunes playlist for ya"})
+    return createPlaylist({
+      name: playlist.playlistName || "New Playlist",
+      trackURIs: spotifyURIs,
+    })
   }
 
   readTextFileToState = (event) => {
@@ -74,6 +80,9 @@ class IndexPage extends React.Component {
     const reader = new FileReader();
     reader.addEventListener('load', (event) => {
       this.parseCSVToState(event.target.result)
+      if (!this.props.playlist.playlistName) {
+        this.props.setPlaylistName(cleanNameForPlaylist(files[0].name))
+      }
     });
     reader.readAsText(files[0]);
   }
@@ -144,8 +153,20 @@ const cleanNameForSpotifySearch = (name) => {
     .trim()
 }
 
-const mapStateToProps = ({auth, search, upload, db}) => {
-  return { auth, search, upload, db }
+const cleanNameForPlaylist = (name) => {
+  const nameTrimmed = name.trim()
+  if (!nameTrimmed) {
+    return ""
+  }
+  const split = nameTrimmed.split(".")
+  if (split.length == 1) {
+    return nameTrimmed
+  }
+  return split.slice(0,-1).join(".").trim()
+}
+
+const mapStateToProps = ({auth, search, upload, db, playlist}) => {
+  return { auth, search, upload, db, playlist }
 }
 
 const mapDispatchToProps = {
@@ -155,6 +176,7 @@ const mapDispatchToProps = {
   setTracks,
   setSelectedSearchResultTrack,
   createPlaylist,
+  setPlaylistName,
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(withRouter(IndexPage))
