@@ -1,7 +1,7 @@
 import {
   Alignment,
+  AnchorButton,
   Button,
-  Classes,
   FileInput,
   Navbar,
   NavbarDivider,
@@ -30,10 +30,11 @@ export default ({ username, onFileSelect, onLoginClick }) => {
 
       </NavbarGroup>
       <NavbarGroup align={Alignment.RIGHT}>
+        <AnchorButton minimal icon="code" text="View Code" href="https://github.com/benmoose/itunes-to-spotify" />
         <NavbarDivider />
         {username
-          ? <Button className={Classes.MINIMAL} icon="user" text={username}/>
-          : <Button className={Classes.MINIMAL} icon="user" text="Login" onClick={onLoginClick} />
+          ? <Button minimal icon="user" text={username}/>
+          : <Button minimal icon="user" text="Login" onClick={onLoginClick} />
         }
       </NavbarGroup>
     </Navbar>
