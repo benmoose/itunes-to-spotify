@@ -10,6 +10,7 @@ import {
 
 const initialState = {
   isFetching: false,
+  playlistData: null,
   playlistName: ""
 }
 
@@ -18,12 +19,13 @@ export default (state = initialState, action) => {
     case CREATE_PLAYLIST_REQUEST:
       return {...state, isFetching: true}
     case CREATE_PLAYLIST_SUCCESS:
-      return {...state, isFetching: false, ...action.payload}
+      return {...state, isFetching: false, playlistData: action.payload}
     case CREATE_PLAYLIST_FAILURE:
       return {...state, isFetching: false}
     case ADD_TRACKS_TO_PLAYLIST_REQUEST:
       return {...state, isFetching: true}
     case ADD_TRACKS_TO_PLAYLIST_SUCCESS:
+      return {...state, isFetching: false}
     case ADD_TRACKS_TO_PLAYLIST_FAILURE:
       return {...state, isFetching: false}
     case SET_PLAYLIST_NAME:

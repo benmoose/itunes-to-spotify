@@ -1,7 +1,9 @@
 import { withRouter } from 'next/router'
+import { Intent } from '@blueprintjs/core'
 import {connect} from 'react-redux'
 import Papa from 'papaparse'
 import { sha256 } from 'js-sha256'
+import { getAppToaster } from '../components/appToaster'
 import Nav from '../components/nav'
 import PlaylistDisplay from '../components/playlistDisplay'
 import CreatePlaylistFooter from '../components/createPlaylistFooter'
@@ -62,6 +64,16 @@ class IndexPage extends React.Component {
       name: playlist.playlistName || "New Playlist",
       trackURIs: spotifyURIs,
     })
+      .then(() => playlist.playlistData)
+      .then(data => getAppToaster().show({
+        intent: Intent.SUCCESS,
+        message: `Playlist '${data.name}' created!`,
+        action: {
+          href: data.external_urls.spotify,
+          target: "_blank",
+          text: <strong>Open</strong>,
+        },
+      }))
   }
 
   readTextFileToState = (event) => {
