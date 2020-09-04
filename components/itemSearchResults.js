@@ -29,7 +29,7 @@ export default ({ searchResults, searchDB, onSearchResultClick }) => {
               itemsEqual="id"
               noResults={<MenuItem disabled text="No matches" />}
               onItemSelect={item => onSearchResultClick(item.id)}
-              itemRenderer={(item, props) => <SelectItem {...item} {...props} />}
+              itemRenderer={(item, props) => <SelectItem key={item.id} {...item} {...props} />}
               itemPredicate={(query, item) => {
                 return item.name.toLowerCase().indexOf(query.toLowerCase()) >= 0
                   || item.album.name.toLowerCase().indexOf(query.toLowerCase()) >= 0
