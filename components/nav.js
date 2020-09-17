@@ -30,7 +30,13 @@ export default ({ username, onFileSelect, onLoginClick }) => {
 
       </NavbarGroup>
       <NavbarGroup align={Alignment.RIGHT}>
-        <AnchorButton minimal icon="code" text="View Code" href="https://github.com/benmoose/itunes-to-spotify" />
+        <AnchorButton
+          minimal
+          icon="code"
+          text="View Code"
+          target="_blank"
+          href="https://github.com/benmoose/itunes-to-spotify"
+        />
         <NavbarDivider />
         {username
           ? <Button minimal icon="user" text={username}/>
