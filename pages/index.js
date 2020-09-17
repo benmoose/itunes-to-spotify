@@ -5,6 +5,7 @@ import Papa from 'papaparse'
 import { sha256 } from 'js-sha256'
 import { getAppToaster } from '../components/appToaster'
 import Nav from '../components/nav'
+import DemoImage from '../components/demoImage'
 import PlaylistDisplay from '../components/playlistDisplay'
 import CreatePlaylistFooter from '../components/createPlaylistFooter'
 import { trackSearch, setSelectedSearchResultTrack } from '../actions/searchActions'
@@ -19,6 +20,7 @@ const displayHeaders = ["Name", "Artist", "Year"]
 class IndexPage extends React.Component {
   render () {
     const { auth, upload, search, db, playlist, setSelectedSearchResultTrack, setPlaylistName } = this.props
+    const isLoggedIn = auth.accessToken
     const rowData = upload.trackOrder.map(id => upload.tracks[id]).filter(r => !!r)
     const searchResults = upload.trackOrder.map(id => search[id]).filter(r => !!r)
     const trackWithSearchResults = searchResults.map(r => r.searchResultIDs && r.searchResultIDs.length > 0).filter(r => !!r)
@@ -26,7 +28,7 @@ class IndexPage extends React.Component {
       <>
         <Nav username={auth.username} onFileSelect={this.readTextFileToState} onLoginClick={this.redirectToLoginPage} />
         {rowData.length > 0
-          && <PlaylistDisplay
+          ? <PlaylistDisplay
             onSearchResultClick={trackID => searchResultID => setSelectedSearchResultTrack(trackID, searchResultID)}
             headerRow={displayHeaders}
             trackOrder={upload.trackOrder}
@@ -34,6 +36,7 @@ class IndexPage extends React.Component {
             searchResults={search}
             searchDB={db.tracks}
           />
+          : (isLoggedIn && <DemoImage />)
         }
         {searchResults.length > 0
           && <CreatePlaylistFooter

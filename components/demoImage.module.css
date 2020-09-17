@@ -1,0 +1,14 @@
+.container {
+  max-width: 600px;
+  margin: 0 auto;
+  padding-top: 15px;
+}
+
+.img {
+  border-radius: 3px;
+  width: 100%;
+}
+
+.imgContainer {
+  margin: 15px 0 0 0;
+}
