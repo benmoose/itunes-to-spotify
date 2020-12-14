@@ -30,6 +30,7 @@ export const createPlaylist = ({ name, description, trackURIs }) => {
       .then(res => {
         dispatch(createPlaylistSuccess(res.data))
         dispatch(addTracksToPlaylist(res.data.id, trackURIs))
+        return res.data
       })
       .catch(err => dispatch(createPlaylistFailure(err)))
   }
@@ -74,5 +75,5 @@ const getAccessToken = (state) => {
 }
 
 const getUsername = (state) => {
-  return state.auth.username
+  return state.auth.id
 }

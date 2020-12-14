@@ -17,6 +17,7 @@ export const GET_USER_PROFILE_SUCCESS = authPrefix + "GET_USER_PROFILE_SUCCESS"
 const getUserProfileSuccess = (data) => ({
   type: GET_USER_PROFILE_SUCCESS,
   payload: {
+    id: data.id,
     username: data.display_name,
     profileUrl: data.external_urls.spotify,
   },

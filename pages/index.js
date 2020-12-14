@@ -67,7 +67,6 @@ class IndexPage extends React.Component {
       name: playlist.playlistName || "New Playlist",
       trackURIs: spotifyURIs,
     })
-      .then(() => playlist.playlistData)
       .then(data => getAppToaster().show({
         intent: Intent.SUCCESS,
         message: `Playlist '${data.name}' created!`,
