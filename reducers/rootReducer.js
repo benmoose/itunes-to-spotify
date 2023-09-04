@@ -11,5 +11,5 @@ export default combineReducers({
   db: dbReducer,
   playlist: playlistReducer,
   search: searchReducer,
-  upload: uploadReducer,
+  upload: uploadReducer
 })

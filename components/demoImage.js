@@ -10,7 +10,7 @@ export default () => {
         Get the playlist file to upload by exporting the playlist from iTunes/Music.
       </Callout>
       <div className={styles.imgContainer}>
-        {/*<img src={DemoImage} className={styles.img} />*/}
+        {/* <img src={DemoImage} className={styles.img} /> */}
       </div>
     </div>
   )

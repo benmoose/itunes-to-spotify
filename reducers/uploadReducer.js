@@ -2,7 +2,7 @@ import { SET_TRACKS, SET_TRACK_ORDER } from '../actions/uploadActions'
 
 const initialState = {
   trackOrder: [],
-  tracks: {},
+  tracks: {}
 }
 
 export default (state = initialState, action) => {
@@ -10,7 +10,7 @@ export default (state = initialState, action) => {
     case SET_TRACK_ORDER:
       return { ...state, trackOrder: action.payload }
     case SET_TRACKS:
-      return {...state, tracks: action.payload}
+      return { ...state, tracks: action.payload }
   }
   return state
 }

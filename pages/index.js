@@ -1,10 +1,10 @@
-import React from "react"
-
-import { withRouter } from 'next/router'
 import { Intent } from '@blueprintjs/core'
-import {connect} from 'react-redux'
-import Papa from 'papaparse'
 import { sha256 } from 'js-sha256'
+import { withRouter } from 'next/router'
+import React from 'react'
+import { connect } from 'react-redux'
+import Papa from 'papaparse'
+
 import { getAppToaster } from '../components/appToaster'
 import Nav from '../components/nav'
 import DemoImage from '../components/demoImage'
@@ -17,7 +17,7 @@ import {
   setTracks
 } from '../actions/uploadActions'
 
-const displayHeaders = ["Name", "Artist", "Year"]
+const displayHeaders = ['Name', 'Artist', 'Year']
 
 class IndexPage extends React.Component {
   render () {
@@ -31,30 +31,28 @@ class IndexPage extends React.Component {
         <Nav username={auth.username} onFileSelect={this.readTextFileToState} onLoginClick={this.redirectToLoginPage} />
         {rowData.length > 0
           ? <PlaylistDisplay
-            onSearchResultClick={trackID => searchResultID => setSelectedSearchResultTrack(trackID, searchResultID)}
-            headerRow={displayHeaders}
-            trackOrder={upload.trackOrder}
-            tracks={upload.tracks}
-            searchResults={search}
-            searchDB={db.tracks}
-          />
-          : (isLoggedIn && <DemoImage />)
-        }
-        {searchResults.length > 0
-          && <CreatePlaylistFooter
+              onSearchResultClick={trackID => searchResultID => setSelectedSearchResultTrack(trackID, searchResultID)}
+              headerRow={displayHeaders}
+              trackOrder={upload.trackOrder}
+              tracks={upload.tracks}
+              searchResults={search}
+              searchDB={db.tracks}
+            />
+          : (isLoggedIn && <DemoImage />)}
+        {searchResults.length > 0 &&
+          <CreatePlaylistFooter
             loading={playlist.isFetching}
             playlistName={playlist.playlistName}
             onPlaylistNameChange={setPlaylistName}
             itemCount={trackWithSearchResults.length}
             createPlaylistAction={this.createPlaylistFromState}
-          />
-        }
+          />}
       </>
     )
   }
 
   redirectToLoginPage = () => {
-    this.props.router.push("/api/login")
+    this.props.router.push('/api/login')
   }
 
   createPlaylistFromState = () => {
@@ -66,17 +64,17 @@ class IndexPage extends React.Component {
       return
     }
     return createPlaylist({
-      name: playlist.playlistName || "New Playlist",
-      trackURIs: spotifyURIs,
+      name: playlist.playlistName || 'New Playlist',
+      trackURIs: spotifyURIs
     })
       .then(data => getAppToaster().show({
         intent: Intent.SUCCESS,
         message: `Playlist '${data.name}' created!`,
         action: {
           href: data.external_urls.spotify,
-          target: "_blank",
-          text: <strong>Open</strong>,
-        },
+          target: '_blank',
+          text: <strong>Open</strong>
+        }
       }))
   }
 
@@ -84,29 +82,29 @@ class IndexPage extends React.Component {
     const files = event.target.files
 
     if (files.length !== 1) {
-      this.setError("Too many files selected")
+      this.setError('Too many files selected')
       return
     }
 
-    if (files[0].type && files[0].type !== "text/plain") {
+    if (files[0].type && files[0].type !== 'text/plain') {
       this.setError('Expected to receive a .txt file')
       return
     }
 
-    const reader = new FileReader();
+    const reader = new FileReader()
     reader.addEventListener('load', (event) => {
       this.parseCSVToState(event.target.result)
       if (!this.props.playlist.playlistName) {
         this.props.setPlaylistName(cleanNameForPlaylist(files[0].name))
       }
-    });
-    reader.readAsText(files[0]);
+    })
+    reader.readAsText(files[0])
   }
 
   parseCSVToState = (csvString) => {
-    const parseResult = Papa.parse(csvString, {delimiter: "\t"})
+    const parseResult = Papa.parse(csvString, { delimiter: '\t' })
     if (parseResult.data.length === 0) {
-      this.setError("Empty playlist")
+      this.setError('Empty playlist')
       return
     }
     const headerRow = parseResult.data[0]
@@ -129,7 +127,7 @@ class IndexPage extends React.Component {
   }
 
   performSpotifySearchOnPlaylistData = () => {
-    const {upload} = this.props
+    const { upload } = this.props
     if (!upload.trackOrder) {
       return
     }
@@ -156,32 +154,32 @@ const getRowIndexes = (headerNames, headerRow) => {
 const trackIDFromRow = (row) => {
   return sha256(
     row.reduce((acc, el) => {
-      return acc === "" ? el : acc + `.${el}`
-    }, "")
+      return acc === '' ? el : acc + `.${el}`
+    }, '')
   )
 }
 
 const cleanNameForSpotifySearch = (name) => {
   const bracketMatch = /\(([^)]+)\)/
   return name
-    .replace(bracketMatch, " ")
-    .replace("&", " ")
+    .replace(bracketMatch, ' ')
+    .replace('&', ' ')
     .trim()
 }
 
 const cleanNameForPlaylist = (name) => {
   const nameTrimmed = name.trim()
   if (!nameTrimmed) {
-    return ""
+    return ''
   }
-  const split = nameTrimmed.split(".")
+  const split = nameTrimmed.split('.')
   if (split.length == 1) {
     return nameTrimmed
   }
-  return split.slice(0,-1).join(".").trim()
+  return split.slice(0, -1).join('.').trim()
 }
 
-const mapStateToProps = ({auth, search, upload, db, playlist}) => {
+const mapStateToProps = ({ auth, search, upload, db, playlist }) => {
   return { auth, search, upload, db, playlist }
 }
 
@@ -191,7 +189,7 @@ const mapDispatchToProps = {
   setTracks,
   setSelectedSearchResultTrack,
   createPlaylist,
-  setPlaylistName,
+  setPlaylistName
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(withRouter(IndexPage))

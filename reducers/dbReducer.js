@@ -1,7 +1,7 @@
 import { SET_TRACKS } from '../actions/searchActions'
 
 const defaultState = {
-  tracks: {},
+  tracks: {}
 }
 
 export default (state = defaultState, action) => {
@@ -9,7 +9,7 @@ export default (state = defaultState, action) => {
     case SET_TRACKS:
       return {
         ...state,
-        tracks: {...state.tracks, ...action.payload.tracks}
+        tracks: { ...state.tracks, ...action.payload.tracks }
       }
   }
   return state
