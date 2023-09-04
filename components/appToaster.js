@@ -11,5 +11,5 @@ export const getAppToaster = () => {
 }
 
 const getToaster = () => Toaster.create({
-  position: Position.TOP,
+  position: Position.TOP
 })

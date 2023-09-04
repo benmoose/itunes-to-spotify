@@ -1,3 +1,5 @@
+import React from "react"
+
 import { withRouter } from 'next/router'
 import { Intent } from '@blueprintjs/core'
 import {connect} from 'react-redux'
@@ -185,7 +187,6 @@ const mapStateToProps = ({auth, search, upload, db, playlist}) => {
 
 const mapDispatchToProps = {
   trackSearch,
-  setTrackOrder,
   setTrackOrder,
   setTracks,
   setSelectedSearchResultTrack,

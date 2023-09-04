@@ -1,5 +1,6 @@
 import { Callout, Intent } from '@blueprintjs/core'
-import DemoImage from '../public/img/export-playlist.png'
+
+// import DemoImage from '../public/img/export-screenshot.jpg'
 import styles from './demoImage.module.css'
 
 export default () => {
@@ -9,7 +10,7 @@ export default () => {
         Get the playlist file to upload by exporting the playlist from iTunes/Music.
       </Callout>
       <div className={styles.imgContainer}>
-        <img src={DemoImage} className={styles.img} />
+        {/*<img src={DemoImage} className={styles.img} />*/}
       </div>
     </div>
   )
