@@ -1,13 +1,11 @@
 import axios from 'axios'
-import React from 'react'
-import URL, { URLSearchParams } from 'url'
-import qs from 'querystring'
 import Router from 'next/router'
+import qs from 'querystring'
+import React from 'react'
 import { connect } from 'react-redux'
+import URL, { URLSearchParams } from 'url'
 
 import { setAccessToken, getUserProfile } from '../../actions/authActions'
-
-const SPOTIFY_ACCESS_TOKEN_URL = 'https://accounts.spotify.com/api/token'
 
 class AuthLoginCallbackPage extends React.Component {
   componentDidMount () {
@@ -15,6 +13,7 @@ class AuthLoginCallbackPage extends React.Component {
     if (error) {
       return
     }
+
     setAccessToken(accessToken, refreshToken, expiresAt)
     window.localStorage.setItem('auth:access', accessToken)
     window.localStorage.setItem('auth:refresh', refreshToken)
@@ -45,29 +44,20 @@ export async function getServerSideProps ({ req, res }) {
   }
 
   const params = new URLSearchParams(url.query)
-  if (!validateState(params.get('state'))) {
-    res.statusCode = 400
-    return { props: { error: 'invalid params' } }
-  }
 
-  if (!params.get('code')) {
+  if (!validateState(params.get('state')) || !params.get('code')) {
     res.statusCode = 400
     return { props: { error: 'invalid params' } }
   }
 
   try {
-    const response = await makeSpotifyAccessTokenRequest(
-      process.env.SPOTIFY_CLIENT_ID,
-      process.env.SPOTIFY_CLIENT_SECRET,
-      process.env.SPOTIFY_REDIRECT_URI,
-      params.get('code')
-    )
-    const nowMs = Date.now()
+    const nowMillis = Date.now()
+    const response = await makeSpotifyAccessTokenRequest(params.get('code'))
     return {
       props: {
         accessToken: response.data.access_token,
         refreshToken: response.data.refresh_token,
-        expiresAt: nowMs + (response.data.expires_in * 1000)
+        expiresAt: nowMillis + (response.data.expires_in * 1000)
       }
     }
   } catch (e) {
@@ -76,33 +66,27 @@ export async function getServerSideProps ({ req, res }) {
   }
 }
 
+// TODO: implement properly :)
+const validateState = state => typeof state === 'string' && state.substring(0, 6) === 'moose:'
+
+const makeSpotifyAccessTokenRequest = (code) => {
+  const body = {
+    client_id: process.env.NEXT_PUBLIC_SPOTIFY_CLIENT_ID,
+    client_secret: process.env.SPOTIFY_CLIENT_SECRET,
+    code,
+    grant_type: 'authorization_code',
+    redirect_uri: process.env.NEXT_PUBLIC_SPOTIFY_REDIRECT_URI
+  }
+
+  // OAuth specifies application/x-www-form-urlencoded encoding
+  return axios.post(process.env.NEXT_PUBLIC_SPOTIFY_ACCESS_TOKEN_URL, qs.stringify(body), {
+    headers: { 'content-type': 'application/x-www-form-urlencoded' }
+  })
+}
+
 const mapDispatchToProps = {
   setAccessToken,
   getUserProfile
 }
 
 export default connect(null, mapDispatchToProps)(AuthLoginCallbackPage)
-
-/**
- * TODO: This should be implemented properly :)
- */
-function validateState (state) {
-  if (!state || state.substr(0, 6) !== 'moose:') {
-    return false
-  }
-  return true
-}
-
-function makeSpotifyAccessTokenRequest (clientId, clientSecret, redirectUri, code) {
-  const body = {
-    grant_type: 'authorization_code',
-    redirect_uri: redirectUri,
-    code,
-    client_id: clientId,
-    client_secret: clientSecret
-  }
-  // OAuth specifies application/x-www-form-urlencoded encoding
-  return axios.post(SPOTIFY_ACCESS_TOKEN_URL, qs.stringify(body), {
-    headers: { 'content-type': 'application/x-www-form-urlencoded' }
-  })
-}

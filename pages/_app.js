@@ -1,11 +1,10 @@
-import Head from 'next/head'
-import { Provider } from 'react-redux'
-import Favicon from '../public/img/fav.svg'
-
-import 'normalize.css/normalize.css'
 import '@blueprintjs/core/lib/css/blueprint.css'
 import '@blueprintjs/icons/lib/css/blueprint-icons.css'
+import Head from 'next/head'
+import 'normalize.css/normalize.css'
+import { Provider } from 'react-redux'
 
+import Favicon from '../public/img/fav.svg'
 import store from '../store'
 
 function CustomApp ({ Component, pageProps }) {

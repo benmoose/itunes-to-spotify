@@ -17,38 +17,34 @@ import {
   setTracks
 } from '../actions/uploadActions'
 
-const displayHeaders = ['Name', 'Artist', 'Year']
-
 class IndexPage extends React.Component {
   render () {
     const { auth, upload, search, db, playlist, setSelectedSearchResultTrack, setPlaylistName } = this.props
     const isLoggedIn = auth.accessToken
-    const rowData = upload.trackOrder.map(id => upload.tracks[id]).filter(r => !!r)
-    const searchResults = upload.trackOrder.map(id => search[id]).filter(r => !!r)
+    const rowData = upload.trackOrder.map(id => upload.tracks[id])
+    const searchResults = upload.trackOrder.map(id => search[id])
     const trackWithSearchResults = searchResults.map(r => r.searchResultIDs && r.searchResultIDs.length > 0).filter(r => !!r)
-    return (
-      <>
-        <Nav username={auth.username} onFileSelect={this.readTextFileToState} onLoginClick={this.redirectToLoginPage} />
-        {rowData.length > 0
-          ? <PlaylistDisplay
-              onSearchResultClick={trackID => searchResultID => setSelectedSearchResultTrack(trackID, searchResultID)}
-              headerRow={displayHeaders}
-              trackOrder={upload.trackOrder}
-              tracks={upload.tracks}
-              searchResults={search}
-              searchDB={db.tracks}
-            />
-          : (isLoggedIn && <DemoImage />)}
-        {searchResults.length > 0 &&
-          <CreatePlaylistFooter
-            loading={playlist.isFetching}
-            playlistName={playlist.playlistName}
-            onPlaylistNameChange={setPlaylistName}
-            itemCount={trackWithSearchResults.length}
-            createPlaylistAction={this.createPlaylistFromState}
-          />}
-      </>
-    )
+
+    return [
+      <Nav username={auth.username} onFileSelect={this.readTextFileToState} onLoginClick={this.redirectToLoginPage} />,
+      rowData.length > 0
+        ? <PlaylistDisplay
+            onSearchResultClick={trackID => searchResultID => setSelectedSearchResultTrack(trackID, searchResultID)}
+            trackOrder={upload.trackOrder}
+            tracks={upload.tracks}
+            searchResults={search}
+            searchDB={db.tracks}
+          />
+        : (isLoggedIn && <DemoImage />),
+      searchResults.length > 0 &&
+        <CreatePlaylistFooter
+          loading={playlist.isFetching}
+          playlistName={playlist.playlistName}
+          onPlaylistNameChange={setPlaylistName}
+          itemCount={trackWithSearchResults.length}
+          createPlaylistAction={this.createPlaylistFromState}
+        />
+    ]
   }
 
   redirectToLoginPage = () => {
@@ -69,7 +65,7 @@ class IndexPage extends React.Component {
     })
       .then(data => getAppToaster().show({
         intent: Intent.SUCCESS,
-        message: `Playlist '${data.name}' created!`,
+        message: <>Your Spotify playlist <strong>{data.name}</strong> has been created!</>,
         action: {
           href: data.external_urls.spotify,
           target: '_blank',
@@ -102,40 +98,36 @@ class IndexPage extends React.Component {
   }
 
   parseCSVToState = (csvString) => {
-    const parseResult = Papa.parse(csvString, { delimiter: '\t' })
-    if (parseResult.data.length === 0) {
+    const result = Papa.parse(csvString, {
+      header: true,
+      skipEmptyLines: true
+    })
+
+    console.log('result', result)
+
+    if (!result?.data || result.data.length === 0) {
       this.setError('Empty playlist')
       return
     }
-    const headerRow = parseResult.data[0]
-    const indices = getRowIndexes(displayHeaders, headerRow)
-    const trackIDs = []
-    const data = parseResult.data.slice(1).map(row => {
-      const rowEmpty = !row.reduce((acc, el) => acc || !!el, false)
-      if (!rowEmpty) {
-        trackIDs.push(trackIDFromRow(row))
-      }
-      return rowEmpty ? null : indices.map(i => row[i])
-    }).filter(row => row !== null)
-    const dataByTrackID = data.reduce((acc, track, i) => {
-      acc[trackIDs[i]] = track
+
+    const trackIDs = result.data.map(hashRow)
+    const dataByTrackID = result.data.reduce((acc, track, i) => {
+      acc[trackIDs[i]] = Object.create({ ...track, i })
       return acc
     }, {})
-    this.props.setTrackOrder(trackIDs)
+
     this.props.setTracks(dataByTrackID)
+    this.props.setTrackOrder(trackIDs)
     this.performSpotifySearchOnPlaylistData()
   }
 
   performSpotifySearchOnPlaylistData = () => {
     const { upload } = this.props
-    if (!upload.trackOrder) {
-      return
-    }
 
-    upload.trackOrder.map(tID => {
-      const cleanName = cleanNameForSpotifySearch(upload.tracks[tID][0])
-      const artistName = cleanNameForSpotifySearch(upload.tracks[tID][1])
-      this.props.trackSearch(tID, cleanName, artistName)
+    upload.trackOrder.forEach(trackID => {
+      const cleanName = cleanNameForSpotifySearch(upload.tracks[trackID].Name)
+      const artistName = cleanNameForSpotifySearch(upload.tracks[trackID].Artist)
+      this.props.trackSearch(trackID, cleanName, artistName)
     })
   }
 
@@ -144,19 +136,8 @@ class IndexPage extends React.Component {
   }
 }
 
-const getRowIndexes = (headerNames, headerRow) => {
-  return headerNames.reduce((acc, headerName) => {
-    const rowIndex = headerRow.indexOf(headerName)
-    return rowIndex === -1 ? acc : [...acc, rowIndex]
-  }, [])
-}
-
-const trackIDFromRow = (row) => {
-  return sha256(
-    row.reduce((acc, el) => {
-      return acc === '' ? el : acc + `.${el}`
-    }, '')
-  )
+const hashRow = (row) => {
+  return sha256(row.values.join('.'))
 }
 
 const cleanNameForSpotifySearch = (name) => {
@@ -173,7 +154,7 @@ const cleanNameForPlaylist = (name) => {
     return ''
   }
   const split = nameTrimmed.split('.')
-  if (split.length == 1) {
+  if (split.length === 1) {
     return nameTrimmed
   }
   return split.slice(0, -1).join('.').trim()

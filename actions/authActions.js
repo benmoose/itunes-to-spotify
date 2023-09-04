@@ -1,6 +1,5 @@
 import axios from 'axios'
 
-const SPOTFY_GET_USER_PROFILE = 'https://api.spotify.com/v1/me'
 const authPrefix = 'AUTH/'
 
 export const SET_ACCESS_TOKEN = authPrefix + 'SET_ACCESS_TOKEN'
@@ -33,7 +32,7 @@ export const getUserProfile = () => {
   return (dispatch, getState) => {
     const accessToken = getAccessToken(getState())
     dispatch(getUserProfileRequest())
-    return axios.get(SPOTFY_GET_USER_PROFILE, {
+    return axios.get(process.env.NEXT_PUBLIC_SPOTIFY_GET_USER_PROFILE_URL, {
       headers: { Authorization: `Bearer ${accessToken}` }
     })
       .then(res => dispatch(getUserProfileSuccess(res.data)))

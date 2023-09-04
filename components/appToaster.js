@@ -1,15 +1,16 @@
 import { Position, Toaster } from '@blueprintjs/core'
 
-let toaster = null
+let singleton = null
 
 export const getAppToaster = () => {
-  if (toaster) {
-    return toaster
+  if (singleton !== null) {
+    return singleton
   }
-  toaster = getToaster()
-  return toaster
+
+  singleton = getToaster()
+  return getToaster()
 }
 
 const getToaster = () => Toaster.create({
-  position: Position.TOP
+  position: Position.TOP_RIGHT
 })

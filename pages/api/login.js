@@ -1,26 +1,23 @@
 import querystring from 'querystring'
 import shortid from 'shortid'
 
-const AUTH_URL = 'https://accounts.spotify.com/authorize'
-
 export default async (req, res) => {
-  const clientID = process.env.SPOTIFY_CLIENT_ID
-  const redirectURI = process.env.SPOTIFY_REDIRECT_URI
   const state = `moose:${shortid.generate()}`
-  const authURLRedirect = getSpotifyAuthURL({ clientID, redirectURI, state })
+  const authURLRedirect = getSpotifyAuthURL(state)
 
   res.statusCode = 301
   res.setHeader('Location', authURLRedirect)
   res.end()
 }
 
-function getSpotifyAuthURL ({ clientID, redirectURI, state }) {
+function getSpotifyAuthURL (state) {
   const params = {
     response_type: 'code',
     scope: 'playlist-modify-public',
-    client_id: clientID,
-    redirect_uri: redirectURI,
+    client_id: process.env.NEXT_PUBLIC_SPOTIFY_CLIENT_ID,
+    redirect_uri: process.env.NEXT_PUBLIC_SPOTIFY_REDIRECT_URI,
     state
   }
-  return `${AUTH_URL}?${querystring.stringify(params)}`
+
+  return `${process.env.NEXT_PUBLIC_SPOTIFY_AUTHORIZATION_URL}?${querystring.stringify(params)}`
 }

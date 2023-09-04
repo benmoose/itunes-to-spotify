@@ -9,6 +9,7 @@ import {
   NavbarHeading,
   Text
 } from '@blueprintjs/core'
+
 import Logo from '../public/img/music.svg'
 
 export default ({ username, onFileSelect, onLoginClick }) => {
