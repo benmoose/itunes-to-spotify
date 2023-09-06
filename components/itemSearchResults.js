@@ -1,3 +1,5 @@
+'use client'
+
 import { AnchorButton, Button, PopoverPosition, Text, MenuItem, Intent } from '@blueprintjs/core'
 import { Select } from '@blueprintjs/select'
 import styles from './itemSearchResults.module.css'

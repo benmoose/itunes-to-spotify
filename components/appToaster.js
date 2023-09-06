@@ -1,3 +1,5 @@
+'use client'
+
 import { Position, Toaster } from '@blueprintjs/core'
 
 let singleton = null

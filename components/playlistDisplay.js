@@ -1,4 +1,7 @@
+'use client'
+
 import { HTMLTable, Spinner, Text, Colors } from '@blueprintjs/core'
+
 import ItemSearchResults from './itemSearchResults'
 
 export default ({ tracks, trackOrder, searchResults, searchDB, onSearchResultClick }) => {
@@ -27,12 +30,12 @@ export default ({ tracks, trackOrder, searchResults, searchDB, onSearchResultCli
                 <td>
                   {
                     searchResults[id]?.isFetching
-                      ? <Spinner size={15}/>
+                      ? <Spinner size={15} />
                       : <ItemSearchResults
-                        onSearchResultClick={onSearchResultClick(id)}
-                        searchResults={searchResults[id]}
-                        searchDB={searchDB}
-                      />
+                          onSearchResultClick={onSearchResultClick(id)}
+                          searchResults={searchResults[id]}
+                          searchDB={searchDB}
+                        />
                   }
                 </td>
               </tr>
