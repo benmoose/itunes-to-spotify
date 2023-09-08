@@ -25,7 +25,6 @@ export default ({ searchResults, searchDB, onSearchResultClick }) => {
             <Select
               items={searchResultIDs.map(id => searchDB[id])}
               activeItem={selectedResult}
-              noResults={<Text>No results</Text>}
               itemsEqual='id'
               noResults={<MenuItem disabled text='No matches' />}
               onItemSelect={item => onSearchResultClick(item.id)}

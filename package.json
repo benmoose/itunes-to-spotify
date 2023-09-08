@@ -7,8 +7,8 @@
     "dev": "next",
     "build": "next build",
     "start": "next start",
-    "lint": "standard",
-    "lint:fix": "standard --fix"
+    "fmt": "standard --fix",
+    "fmt:check": "standard"
   },
   "author": "Ben Hadfield <benjohnhadfield@gmail.com>",
   "license": "ISC",
