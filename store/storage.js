@@ -1,5 +1,3 @@
-'use client'
-
 import createWebStorage from 'redux-persist/lib/storage/createWebStorage'
 
 const createNoopStorage = () => {

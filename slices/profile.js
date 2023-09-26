@@ -1,64 +1,71 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit'
 
 import { spotify } from '../clients'
-import { authSelectors } from './'
+import { auth } from './'
 
 const initialState = {
   id: '',
   username: '',
   displayName: '',
   spotifyProfileUrl: '',
-
-  loading: false
+  fetching: false,
+  error: null
 }
 
 const getUserProfile = createAsyncThunk(
   'userProfile',
-  async (_, { getState }) => {
-    const accessToken = authSelectors.accessToken(getState())
+  (_, { getState, rejectWithValue }) => {
+    const accessToken = auth.selectors.accessToken(getState())
 
-    const profile = await spotify.getProfile(accessToken)
-
-    if (profile.type !== 'user') {
-      thunkApi.rejectWithValue(new Error(`user profile response type is '${data?.type}' not 'user'`))
-    }
-
-    return data
+    return spotify.getProfile(accessToken)
   }
 )
 
-const profile = createSlice({
+const profileSlice = createSlice({
   name: 'profile',
 
   initialState,
 
   reducers: {
-    setDisplayName: (state, action) => (
+    setDisplayName: (state = initialState, action) => (
       { ...state, username: action.payload, displayName: action.payload }
     ),
-    setProfileUrl: (state, action) => (
+    setProfileUrl: (state = initialState, action) => (
       { ...state, profileUrl: action.payload }
     )
   },
 
   extraReducers: (builder) => {
-    builder.addCase(getUserProfile.pending, (state, action) => {
-      state.loading = true
+    builder.addCase(getUserProfile.pending, (state = initialState, action) => {
+      state.fetching = true
     })
-    builder.addCase(getUserProfile.rejected, (state, action) => {
-      state.loading = false
+    builder.addCase(getUserProfile.rejected, (state = initialState, { payload }) => {
+      state.error = payload
+      state.fetching = false
     })
-    builder.addCase(getUserProfile.fulfilled, (state, { payload }) => {
+    builder.addCase(getUserProfile.fulfilled, (state = initialState, { payload }) => {
       state.displayName ||= payload.display_name
       state.id ||= payload.id
+      state.fetching = false
       state.profileUrl ||= payload.external_urls?.spotify
       state.username ||= payload.display_name
-      state.loading = false
     })
   }
 })
 
-export const displayName = state => state?.profile?.displayName
-export const profileUrl = state => state?.profile?.spotifyProfileUrl
-export const username = state => state?.profile?.username
-export default profile
+const displayName = state => state?.profile?.displayName
+const profileUrl = state => state?.profile?.spotifyProfileUrl
+const username = state => state?.profile?.username
+const fetching = state => state?.profile?.fetching
+
+export default {
+  slice: profileSlice,
+  selectors: {
+    displayName,
+    profileUrl,
+    username
+  },
+  actions: {
+    getUserProfile
+  }
+}

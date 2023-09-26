@@ -12,20 +12,15 @@ import {
 } from '@blueprintjs/core'
 import Image from 'next/image'
 import Link from 'next/link'
-import { redirect } from 'next/navigation'
 
-import Logo from '../../public/img/music.svg'
-import { authSelectors, profileSelectors } from '../../slices'
-import { Provider, select, useDispatch } from '../../store'
+import Logo from 'public/img/music.svg'
+import { auth, profile } from 'slices'
+import { Provider, select } from 'store'
 
 function Nav () {
-  const authenticated = select(authSelectors.userAuthenticated)
-  const username = select(profileSelectors.displayName)
-  console.log(`!! username = ${username}`)
+  const authenticated = select(auth.selectors.userAuthenticated)
+  const username = select(profile.selectors.displayName)
 
-  const handleLogin = () => {
-    redirect('/auth/login', 'push')
-  }
   const handleInputChange = (e) => {
     e.preventDefault()
     console.log('upload', e.target.files)
@@ -63,8 +58,8 @@ function Nav () {
             : <Link
                 prefetch={false}
                 replace={false}
-                href='/auth/login'
-                className='bp5-button'
+                href='/login'
+                className='bp5-button bp5-minimal'
                 role='button'
               >Login
             </Link>

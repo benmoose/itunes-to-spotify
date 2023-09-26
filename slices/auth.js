@@ -1,4 +1,4 @@
-import { createAsyncThunk, createSlice } from '@reduxjs/toolkit'
+import { createSlice } from '@reduxjs/toolkit'
 
 const initialState = {
   accessToken: '',
@@ -12,23 +12,32 @@ const authSlice = createSlice({
   initialState,
 
   reducers: {
-    setAccessToken: (state, action) => (
+    setAccessToken: (state = initialState, action) => (
       { ...state, accessToken: action.payload }
     ),
-    setRefreshToken: (state, action) => (
+    setRefreshToken: (state = initialState, action) => (
       { ...state, refreshToken: action.payload }
     ),
-    setExpiresAt: (state, action) => (
+    setExpiresAt: (state = initialState, action) => (
       { ...state, expiresAt: action.payload }
     )
   }
 })
 
-export const userAuthenticated = ({ auth }) => (
+const userAuthenticated = ({ auth }) => (
   auth?.accessToken &&
     Number.isSafeInteger(auth?.expiresAt) &&
     auth.expiresAt > Math.floor(Date.now() / 1000)
 )
-export const accessToken = state => state?.auth?.accessToken
-export const refreshToken = state => state?.auth?.refreshToken
-export default authSlice
+const accessToken = state => state?.auth?.accessToken
+const refreshToken = state => state?.auth?.refreshToken
+
+export default {
+  slice: authSlice,
+  selectors: {
+    userAuthenticated,
+    accessToken,
+    refreshToken
+  },
+  actions: {}
+}
