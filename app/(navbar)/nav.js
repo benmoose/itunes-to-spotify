@@ -3,7 +3,6 @@
 import {
   Alignment,
   AnchorButton,
-  Button,
   FileInput,
   Navbar,
   NavbarDivider,
@@ -11,18 +10,22 @@ import {
   NavbarHeading,
   Text
 } from '@blueprintjs/core'
+import Image from 'next/image'
+import Link from 'next/link'
 import { redirect } from 'next/navigation'
 
-import ReduxProvider from '../../store/redux-provider'
-import { useAppSelector } from '../../store'
-import { authSelector, profileSelector } from '../../slices'
 import Logo from '../../public/img/music.svg'
+import { authSelectors, profileSelectors } from '../../slices'
+import { Provider, select, useDispatch } from '../../store'
 
 function Nav () {
-  const authenticated = useAppSelector(authSelector.authenticated)
-  const username = useAppSelector(profileSelector.username)
+  const authenticated = select(authSelectors.userAuthenticated)
+  const username = select(profileSelectors.displayName)
+  console.log(`!! username = ${username}`)
 
-  const handleLogin = () => redirect('/api/login', 'push')
+  const handleLogin = () => {
+    redirect('/auth/login', 'push')
+  }
   const handleInputChange = (e) => {
     e.preventDefault()
     console.log('upload', e.target.files)
@@ -31,7 +34,7 @@ function Nav () {
   return (
     <Navbar>
       <NavbarGroup>
-        <img style={{ width: '30px', marginRight: '10px' }} src={Logo} />
+        <Image priority width={30} height={30} style={{ marginRight: '10px' }} src={Logo} alt='Site logo' />
         <NavbarHeading>iTunes to Spotify</NavbarHeading>
         <NavbarDivider />
         {
@@ -56,8 +59,15 @@ function Nav () {
         <NavbarDivider />
         {
           authenticated
-            ? <Button minimal icon='user' text={username} />
-            : <Button minimal icon='user' text='Login' onClick={handleLogin} />
+            ? <AnchorButton minimal icon='user' text={username} />
+            : <Link
+                prefetch={false}
+                replace={false}
+                href='/auth/login'
+                className='bp5-button'
+                role='button'
+              >Login
+            </Link>
         }
       </NavbarGroup>
     </Navbar>
@@ -66,8 +76,8 @@ function Nav () {
 
 export default function () {
   return (
-    <ReduxProvider>
+    <Provider>
       <Nav />
-    </ReduxProvider>
+    </Provider>
   )
 }

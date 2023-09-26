@@ -1,46 +1,28 @@
 'use client'
 
-import { redirect, useSearchParams } from 'next/navigation'
+import { redirect } from 'next/navigation'
 
-import ReduxProvider from '../../../store/redux-provider'
-import { useAppDispatch, useAppSelector } from '../../../store'
-import { setAccessToken, authenticatedAuthSelector } from '../../../slices/auth'
+import { authSelectors } from '../../../slices'
+import { Provider, select } from '../../../store'
+import { spotifyAuthUri } from './actions'
 
 async function Login () {
-  const dispatch = useAppDispatch()
-  const params = useSearchParams()
-  const authenticated = useAppSelector(authenticatedAuthSelector)
+  const authenticated = select(authSelectors.userAuthenticated)
 
   if (authenticated) {
     redirect('/')
   }
 
-  const code = params.get('code')
-  if (!code) {
-    return <p>No code param</p>
-  }
+  const authUri = await spotifyAuthUri()
+  console.log(`!! authURL = '${authUri}'`)
 
-  const state = params.get('state')
-  if (!state.startsWith('moose:')) {
-    return <p>No state param</p>
-  }
-
-  const auth = await fetch(`/api/spotify/token?code=${code}&state=${state}`)
-
-  dispatch(setAccessToken(auth.access_token, auth.refresh_token, auth.expires_at))
-
-  window.localStorage.setItem('auth:access', auth.access_token)
-  window.localStorage.setItem('auth:refresh', auth.refresh_token)
-
-  // await getUserProfile()
-
-  redirect('/')
+  redirect(authUri, 'push')
 }
 
 export default function LoginWrapper () {
   return (
-    <ReduxProvider>
+    <Provider>
       <Login />
-    </ReduxProvider>
+    </Provider>
   )
 }

@@ -1,21 +1,30 @@
-import { combineReducers } from 'redux'
-import { FLUSH, PAUSE, PERSIST, persistReducer, PURGE, REGISTER, REHYDRATE } from 'redux-persist'
-import storage from './storage'
 import { configureStore } from '@reduxjs/toolkit'
-import { auth, profile } from '../slices'
+import { combineReducers } from 'redux'
+import { FLUSH, PAUSE, PERSIST, PURGE, REGISTER, REHYDRATE, persistReducer, persistStore } from 'redux-persist'
 
-const combineSlices = (...slices) => combineReducers(
-  slices.reduce((reducer, slice) => ({
-    [slice.name.toString()]: persistReducer({ key: `${slice.name}.state`, storage }, slice.reducer)
-  }), {})
-)
+import { slices } from '../slices'
+import storage from './storage'
 
-export default configureStore({
-  reducer: combineSlices(auth, profile),
-  devTools: process.env.NODE_ENV !== 'production',
+const developmentEnv = process.env.NODE_ENV !== 'production'
+
+const rootReducer = (...slices) => {
+  const rootConfig = { key: 'root', debug: developmentEnv, storage }
+  const reducers = combineReducers(
+    slices.reduce((reducers, slice) => ({ ...reducers, [slice.name]: slice.reducer }), {})
+  )
+
+  return persistReducer(rootConfig, reducers)
+}
+
+export const store = configureStore({
+  reducer: rootReducer(...slices),
+  devTools: developmentEnv,
   middleware: getDefaultMiddleware => getDefaultMiddleware({
     serializableCheck: {
       ignoreActions: [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER]
     }
-  })
+  }),
+  preloadedState: slices.reduce((state, slice) => ({ ...state, [slice.name]: slice.getInitialState() }))
 })
+
+export const persistor = persistStore(store)

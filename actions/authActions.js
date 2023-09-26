@@ -1,5 +1,3 @@
-import axios from 'axios'
-
 const authPrefix = 'AUTH/'
 
 export const SET_ACCESS_TOKEN = authPrefix + 'SET_ACCESS_TOKEN'
@@ -31,9 +29,11 @@ const getUserProfileFailure = (error) => {
 export const getUserProfile = () => {
   return (dispatch, getState) => {
     const accessToken = getAccessToken(getState())
-    dispatch(getUserProfileRequest())
-    return axios.get(process.env.NEXT_PUBLIC_SPOTIFY_GET_USER_PROFILE_URL, {
-      headers: { Authorization: `Bearer ${accessToken}` }
+    (getUserProfileRequest())
+    return fetch(process.env.NEXT_PUBLIC_SPOTIFY_GET_USER_PROFILE_URL, {
+      method: 'GET',
+      headers: { Authorization: `Bearer ${accessToken}` },
+      next: { revalidate: 10 }
     })
       .then(res => dispatch(getUserProfileSuccess(res.data)))
       .catch(err => dispatch(getUserProfileFailure(err)))

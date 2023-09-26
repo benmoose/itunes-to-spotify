@@ -1,4 +1,4 @@
-import { createSlice } from '@reduxjs/toolkit'
+import { createAsyncThunk, createSlice } from '@reduxjs/toolkit'
 
 const initialState = {
   accessToken: '',
@@ -24,8 +24,10 @@ const authSlice = createSlice({
   }
 })
 
-export const authenticated = ({ auth }) => (
-  auth?.accessToken && auth?.expiresAt && auth.expiresAt > Math.floor(Date.now() / 1000)
+export const userAuthenticated = ({ auth }) => (
+  auth?.accessToken &&
+    Number.isSafeInteger(auth?.expiresAt) &&
+    auth.expiresAt > Math.floor(Date.now() / 1000)
 )
 export const accessToken = state => state?.auth?.accessToken
 export const refreshToken = state => state?.auth?.refreshToken
