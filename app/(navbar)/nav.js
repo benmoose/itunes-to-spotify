@@ -15,10 +15,10 @@ import Link from 'next/link'
 
 import Logo from 'public/img/music.svg'
 import { auth, profile } from 'slices'
-import { Provider, select } from 'store'
+import { ReduxProvider, select } from 'store'
 
 function Nav () {
-  const authenticated = select(auth.selectors.userAuthenticated)
+  const authenticated = select(auth.selectors.isUserAuthenticated)
   const username = select(profile.selectors.displayName)
 
   const handleInputChange = (e) => {
@@ -71,8 +71,8 @@ function Nav () {
 
 export default function () {
   return (
-    <Provider>
+    <ReduxProvider>
       <Nav />
-    </Provider>
+    </ReduxProvider>
   )
 }

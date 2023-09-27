@@ -1,30 +1,32 @@
 import { configureStore } from '@reduxjs/toolkit'
 import { combineReducers } from 'redux'
 import { FLUSH, PAUSE, PERSIST, PURGE, REGISTER, REHYDRATE, persistReducer, persistStore } from 'redux-persist'
-
-import { auth, profile } from '../slices'
+import { auth, profile } from 'slices'
 import storage from './storage'
 
-const developmentEnv = process.env.NODE_ENV !== 'production'
+const allSlices = [auth.slice, profile.slice]
 
-const rootReducer = (...slices) => {
-  const rootConfig = { key: 'root', debug: developmentEnv, storage }
-  const reducers = combineReducers(
-    slices.reduce((reducers, slice) => ({ ...reducers, [slice.name]: slice.reducer }), {})
+const shouldDebug = process.env.NODE_ENV !== 'production'
+
+const rootReducer = persistReducer(
+  { key: 'root', debug: shouldDebug, storage },
+  combineReducers(
+    allSlices.reduce((reducers, slice) => ({ ...reducers, [slice.name]: slice.reducer }), {})
   )
+)
 
-  return persistReducer(rootConfig, reducers)
+export default () => {
+  const store = configureStore({
+    devTools: shouldDebug,
+    reducer: rootReducer,
+    preloadedState: allSlices.reduce((state, slice) => Object.assign(state, { [slice.name]: slice.getInitialState() }), {}),
+    middleware: getDefaultMiddleware => getDefaultMiddleware({
+      serializableCheck: {
+        ignoreActions: [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER]
+      }
+    })
+  })
+  const persistor = persistStore(store)
+
+  return { store, persistor }
 }
-
-export const store = configureStore({
-  reducer: rootReducer(auth.slice, profile.slice),
-  devTools: developmentEnv,
-  middleware: getDefaultMiddleware => getDefaultMiddleware({
-    serializableCheck: {
-      ignoreActions: [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER]
-    }
-  }),
-  preloadedState: [auth.slice, profile.slice].reduce((state, slice) => Object.assign(state, { [slice.name]: slice.getInitialState() }), {})
-})
-
-export const persistor = persistStore(store)

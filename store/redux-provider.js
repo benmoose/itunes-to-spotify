@@ -6,7 +6,9 @@ import 'normalize.css/normalize.css'
 import { Provider } from 'react-redux'
 import { PersistGate } from 'redux-persist/integration/react'
 
-import { store, persistor } from './store'
+import makeStore from './store'
+
+const { store, persistor } = makeStore()
 
 export default function ReduxProvider ({ children }) {
   return (

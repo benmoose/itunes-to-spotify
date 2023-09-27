@@ -1,10 +1,10 @@
 'use client'
 
-import { Provider } from 'store'
+import { ReduxProvider } from 'store'
 import Login from './login'
 
 export default () => (
-  <Provider>
+  <ReduxProvider>
     <Login />
-  </Provider>
+  </ReduxProvider>
 )
