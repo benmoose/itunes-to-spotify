@@ -10,16 +10,16 @@ import {
   NavbarHeading,
   Text
 } from '@blueprintjs/core'
+import { useSelector } from 'react-redux'
 import Image from 'next/image'
 import Link from 'next/link'
-
 import Logo from 'public/img/music.svg'
 import { auth, profile } from 'slices'
-import { ReduxProvider, select } from 'store'
+import { ReduxProvider } from 'store'
 
 function Nav () {
-  const authenticated = select(auth.selectors.isUserAuthenticated)
-  const username = select(profile.selectors.displayName)
+  const authenticated = useSelector(auth.selectors.authenticated)
+  const displayName = useSelector(profile.selectors.displayName)
 
   const handleInputChange = (e) => {
     e.preventDefault()
@@ -41,7 +41,6 @@ function Nav () {
               )
             : <Text>Login to convert a playlist</Text>
         }
-
       </NavbarGroup>
       <NavbarGroup align={Alignment.RIGHT}>
         <AnchorButton
@@ -54,15 +53,14 @@ function Nav () {
         <NavbarDivider />
         {
           authenticated
-            ? <AnchorButton minimal icon='user' text={username} />
+            ? <AnchorButton minimal icon='user' text={displayName} />
             : <Link
-                prefetch={false}
-                replace={false}
                 href='/login'
                 className='bp5-button bp5-minimal'
                 role='button'
-              >Login
-            </Link>
+              >
+                Login
+              </Link>
         }
       </NavbarGroup>
     </Navbar>

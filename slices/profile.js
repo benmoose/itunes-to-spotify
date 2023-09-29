@@ -1,16 +1,13 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit'
-
 import { spotify } from 'clients'
 import { select } from 'store'
 import { auth } from './'
-console.log("profile auth = ", typeof auth, auth)
 
 const initialState = {
   id: '',
   displayName: '',
   spotifyProfileUrl: '',
-  fetching: false,
-  error: null
+  fetching: false
 }
 
 const displayName = state => state?.profile?.displayName
@@ -22,31 +19,29 @@ const getUserProfile = createAsyncThunk(
   (_, thunkAPI) => {
     const accessToken = select(auth.selectors.accessToken)
 
-    return spotify.getProfile(accessToken)
+    return spotify.getProfile({ accessToken })
   }
 )
 
-const actions = {
+export const actions = {
   getUserProfile
 }
 
-const selectors = {
+export const selectors = {
   displayName,
   profileUrl,
   fetching
 }
 
-const slice = createSlice({
+export const { name, reducer, getInitialState } = createSlice({
   name: 'profile',
-
   initialState,
-
   reducers: {},
-
   extraReducers: builder => {
-    builder.addCase(getUserProfile.pending, (state = initialState, action) => {
-      state.fetching = true
-    })
+    builder
+      .addCase(getUserProfile.pending, (state = initialState, action) => {
+        state.fetching = true
+      })
     builder.addCase(getUserProfile.rejected, (state = initialState, action) => {
       state.error = action.payload
       state.fetching = false
@@ -59,9 +54,3 @@ const slice = createSlice({
     })
   }
 })
-
-export default {
-  actions,
-  selectors,
-  slice,
-}
