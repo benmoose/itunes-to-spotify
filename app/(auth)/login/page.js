@@ -1,12 +1,8 @@
-'use client'
+import { redirect } from 'next/navigation'
+import { authUrl } from 'spotify'
 
-import { ReduxProvider } from 'store'
-import Login from './login'
+export default async function LoginPage () {
+  const url = await authUrl()
 
-export default function Page () {
-  return (
-    <ReduxProvider>
-      <Login />
-    </ReduxProvider>
-  )
+  redirect(url.href)
 }

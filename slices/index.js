@@ -1,12 +1,12 @@
 import * as auth from './auth'
 import * as profile from './profile'
+import * as itunes from './itunes'
 
-export const reducers = {
-  [auth.name]: auth.reducer,
-  [profile.name]: profile.reducer
-}
+const reduceSlices = (fn) => [auth, profile, itunes].reduce(
+  (acc, mod) => ({ ...acc, [mod.name]: fn(mod) }), {}
+)
 
-export const initialState = {
-  [auth.name]: auth.getInitialState(),
-  [profile.name]: profile.getInitialState()
-}
+export const actions = reduceSlices(slice => slice.actions)
+export const initialState = reduceSlices(slice => slice.initialState)
+export const reducers = reduceSlices(slice => slice.reducer)
+export const selectors = reduceSlices(slice => slice.selectors)

@@ -1,63 +1,93 @@
 import { createAsyncThunk, createSelector, createSlice } from '@reduxjs/toolkit'
+import * as spotify from '../spotify'
 
-const initialState = {
-  accessToken: '',
-  refreshToken: '',
-  scopes: '',
-  expiresAt: undefined,
-  fetching: false,
+const utcSecondsNow = () => {
+  const now = new Date()
+  const utcMillis = now.getTime() - (now.getTimezoneOffset() * 60 * 1000)
+  return Math.ceil(utcMillis / 1000)
 }
 
-const accessToken = state => state?.auth?.accessToken
-const refreshToken = state => state?.auth?.refreshToken
-const expiresAt = state => state?.auth?.expiresAt
-const fetching = state => state?.auth?.fetching
+const initialState = {
+  accessToken: undefined,
+  refreshToken: undefined,
+  scopes: undefined,
+  expiryTime: undefined,
+  fetching: undefined
+}
 
-const authenticated = createSelector(
-  [accessToken, expiresAt],
-  (accessToken, expiresAt) => (
-    accessToken && Number.isSafeInteger(expiresAt) && expiresAt > new Date().getTime()
-  )
-)
+const accessToken = state => state?.accessToken
+const refreshToken = state => state?.refreshToken
+const expiryTime = state => state?.expiryTime
+const fetchingId = state => state?.fetching
+const isFetching = state => state?.fetching !== undefined
+
+const authenticated = (...args) => {
+  return createSelector(
+    [accessToken, expiryTime],
+    (accessToken, expiryTime) => (
+      typeof accessToken === 'string' && Number.isSafeInteger(expiryTime)
+    )
+  )(...args) && expiryTime(...args) > utcSecondsNow()
+}
 
 const fetchAuthTokens = createAsyncThunk(
-  'auth/authTokens',
-  ({ code, state }, { fulfillWithValue }) => {
-    const requestedAt = new Date().getTime()
-    return fetch(`/api/spotify/token?code=${encodeURIComponent(code)}&state=${encodeURIComponent(state)}`)
-      .then(res => res.json())
-      .then(data => fulfillWithValue(data, { requestedAt }))
+  'auth/tokens',
+  async ({ code }, { fulfillWithValue }) => {
+    if (!code) {
+      throw Error('fetchAuthTokens: no code')
+    }
+
+    const requestSentAt = utcSecondsNow()
+    const tokens = await spotify.authTokens(code)
+
+    return fulfillWithValue(tokens, { requestSentAt })
   }
 )
+
+export const { name, reducer, getInitialState } = createSlice({
+  name: 'auth',
+  initialState,
+  reducers: {
+    destroy: (state, action) => {
+      return initialState
+    }
+  },
+  extraReducers: (builder) => {
+    builder
+      .addCase(fetchAuthTokens.pending, (state = initialState, { meta }) => {
+        if (isFetching(state)) {
+          return state
+        }
+
+        return { ...state, fetching: meta.requestId }
+      })
+      .addCase(fetchAuthTokens.rejected, (state = initialState, { error, meta }) => {
+        if (fetchingId(state) !== meta.requestId) {
+          return state
+        }
+
+        return { ...state, error: error.message, fetching: undefined }
+      })
+      .addCase(fetchAuthTokens.fulfilled, (state = initialState, { payload, meta }) => {
+        if (fetchingId(state) !== meta.requestId) {
+          return state
+        }
+
+        const { expiresIn, ...tokens } = payload
+        const expiryTime = meta.requestSentAt + expiresIn
+        return { ...state, ...tokens, expiryTime, fetching: undefined }
+      })
+  }
+})
 
 export const actions = {
   fetchAuthTokens
 }
 
+const scoped = selector => state => selector(state?.[name])
 export const selectors = {
-  authenticated,
-  accessToken,
-  refreshToken,
-  expiresAt,
-  fetching
+  authenticated: scoped(authenticated),
+  accessToken: scoped(accessToken),
+  refreshToken: scoped(refreshToken),
+  isFetching: scoped(isFetching)
 }
-
-export const { name, reducer, getInitialState } = createSlice({
-  name: 'auth',
-  initialState,
-  reducers: {},
-  extraReducers: builder => {
-    builder.addCase(fetchAuthTokens.pending, (state = initialState, action) => {
-        return { ...state, fetching: true }
-      })
-    builder.addCase(fetchAuthTokens.rejected, (state = initialState, { payload }) => {
-      return { ...state, fetching: false, error: payload }
-    })
-    builder.addCase(fetchAuthTokens.fulfilled, (state = initialState, { payload, meta }) => {
-      const { accessToken, refreshToken, scopes, expiresIn } = action.payload
-      const expiryTime = meta.requestedAt + expiresIn
-
-      return { ...state, accessToken, refreshToken, scopes, expiryTime }
-    })
-  }
-})

@@ -1,20 +1,17 @@
 import 'normalize.css/normalize.css'
-import { Nunito_Sans } from 'next/font/google'
+import '@blueprintjs/core/lib/css/blueprint.css'
+import '@blueprintjs/icons/lib/css/blueprint-icons.css'
 
 export const metadata = {
   title: {
-    default: 'iTunes to Spotify'
+    default: 'CrateConv',
+    template: '%s | CrateConv'
   }
 }
 
-const appFont = Nunito_Sans({
-  subsets: ['latin'],
-  display: 'swap'
-})
-
 export default function RootLayout ({ children }) {
   return (
-    <html lang='en' className={appFont.className}>
+    <html lang='en'>
       <body>
         {children}
       </body>

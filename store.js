@@ -1,7 +1,7 @@
 import { configureStore } from '@reduxjs/toolkit'
 import { combineReducers } from 'redux'
 import { FLUSH, PAUSE, PERSIST, PURGE, REGISTER, REHYDRATE, persistReducer, persistStore } from 'redux-persist'
-import { reducers, initialState } from 'slices'
+import { initialState, reducers } from 'slices'
 import storage from './storage'
 
 const developmentEnv = process.env.NODE_ENV !== 'production'
@@ -11,7 +11,8 @@ const rootReducer = persistReducer(
     key: 'root',
     debug: developmentEnv,
     storage
-  }, combineReducers(reducers)
+  },
+  combineReducers(reducers)
 )
 
 export default function configure () {

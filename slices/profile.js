@@ -1,56 +1,75 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit'
-import { spotify } from 'clients'
-import { select } from 'store'
-import { auth } from './'
+import * as spotify from 'spotify'
+import { selectors as authSelectors } from './auth'
 
 const initialState = {
-  id: '',
+  id: undefined,
   displayName: '',
   spotifyProfileUrl: '',
-  fetching: false
+  image: undefined,
+  fetching: undefined
 }
 
-const displayName = state => state?.profile?.displayName
-const profileUrl = state => state?.profile?.spotifyProfileUrl
-const fetching = state => state?.profile?.fetching
+const hasProfile = state => !!state?.id
+const displayName = state => state?.displayName
+const profileUrl = state => state?.spotifyProfileUrl
+const fetchingId = state => state?.fetching
+const isFetching = state => state?.fetching !== undefined
 
-const getUserProfile = createAsyncThunk(
-  'getUserProfile',
-  (_, thunkAPI) => {
-    const accessToken = select(auth.selectors.accessToken)
+const fetchProfile = createAsyncThunk(
+  'profile/fetch',
+  async (_, { getState }) => {
+    const accessToken = authSelectors.accessToken(getState())
+    if (!accessToken) {
+      throw Error('no access token')
+    }
 
-    return spotify.getProfile({ accessToken })
+    return await spotify.profile({ accessToken })
   }
 )
-
-export const actions = {
-  getUserProfile
-}
-
-export const selectors = {
-  displayName,
-  profileUrl,
-  fetching
-}
 
 export const { name, reducer, getInitialState } = createSlice({
   name: 'profile',
   initialState,
-  reducers: {},
+  reducers: {
+    destroy: (state, action) => {
+      return initialState
+    }
+  },
   extraReducers: builder => {
     builder
-      .addCase(getUserProfile.pending, (state = initialState, action) => {
-        state.fetching = true
+      .addCase(fetchProfile.pending, (state = initialState, { meta }) => {
+        if (isFetching(state)) {
+          return state
+        }
+
+        return { ...state, fetching: meta.requestId }
       })
-    builder.addCase(getUserProfile.rejected, (state = initialState, action) => {
-      state.error = action.payload
-      state.fetching = false
-    })
-    builder.addCase(getUserProfile.fulfilled, (state = initialState, { payload }) => {
-      state.displayName = payload.display_name
-      state.id = payload.id
-      state.fetching = false
-      state.profileUrl = payload.external_urls?.spotify
-    })
+      .addCase(fetchProfile.rejected, (state = initialState, { error, meta }) => {
+        if (fetchingId(state) !== meta.requestId) {
+          return state
+        }
+
+        return { ...state, error: error.message, fetching: undefined }
+      })
+      .addCase(fetchProfile.fulfilled, (state = initialState, { payload, meta }) => {
+        if (fetchingId(state) !== meta.requestId) {
+          return state
+        }
+
+        return { ...state, ...payload, fetching: undefined }
+      })
   }
 })
+
+export const actions = {
+  fetchProfile
+}
+
+const scoped = selector => state => selector(state?.[name])
+export const selectors = {
+  hasProfile: scoped(hasProfile),
+  displayName: scoped(displayName),
+  profileUrl: scoped(profileUrl),
+  isFetching: scoped(isFetching)
+}
