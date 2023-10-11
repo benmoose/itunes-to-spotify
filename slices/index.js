@@ -2,6 +2,8 @@ import * as auth from './auth'
 import * as profile from './profile'
 import * as itunes from './itunes'
 
+console.log(auth.name, profile.name)
+
 const reduceSlices = (fn) => [auth, profile, itunes].reduce(
   (acc, mod) => ({ ...acc, [mod.name]: fn(mod) }), {}
 )

@@ -1,6 +1,12 @@
 'use client'
 
-import { Spinner, SpinnerSize, Intent } from '@blueprintjs/core'
+import {
+  Navbar,
+  NavbarHeading,
+  NavbarGroup,
+  Alignment,
+  AnchorButton, NavbarDivider
+} from '@blueprintjs/core'
 import { useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { useRouter } from 'next/navigation'
@@ -14,7 +20,6 @@ export default function LoginCallbackPage ({ searchParams }) {
   const { code } = searchParams
 
   useEffect(() => {
-    console.log(code, authenticated)
     if (authenticated) {
       router.replace('/')
     } else {
@@ -26,5 +31,16 @@ export default function LoginCallbackPage ({ searchParams }) {
     }
   }, [code])
 
-  return <Spinner size={SpinnerSize.LARGE} intent={Intent.PRIMARY} />
+  return (
+    <Navbar>
+      <NavbarGroup>
+        <NavbarHeading className='bp5-skeleton'>iTunes to Spotify</NavbarHeading>
+      </NavbarGroup>
+      <NavbarGroup align={Alignment.RIGHT}>
+        <AnchorButton minimal className='bp5-skeleton' icon='code' text='View Code' />
+        <NavbarDivider className='bp5-skeleton' />
+        <AnchorButton minimal className='bp5-skeleton' icon='user' rightIcon='chevron-down' text='Loading' />
+      </NavbarGroup>
+    </Navbar>
+  )
 }

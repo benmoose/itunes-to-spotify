@@ -3,43 +3,27 @@
 import {
   Alignment,
   AnchorButton,
-  FileInput,
   Navbar,
   NavbarDivider,
   NavbarGroup,
   NavbarHeading
 } from '@blueprintjs/core'
-import { useDispatch, useSelector } from 'react-redux'
+import { useSelector } from 'react-redux'
 import Image from 'next/image'
 import Link from 'next/link'
 import Logo from 'public/img/music.svg'
-import { actions, selectors } from 'slices'
+import { selectors } from 'slices'
 
-export default function NavbarComponent ({ handleFormSubmit }) {
-  const dispatch = useDispatch()
+export default function NavbarComponent () {
   const authenticated = useSelector(selectors.auth.authenticated)
   const displayName = useSelector(selectors.profile.displayName)
-  const playlistName = useSelector(selectors.itunes.playlistName)
   const fetching = useSelector(selectors.profile.isFetching)
-
-  const setPlaylistName = (event) => {
-    if (event.currentTarget.files.length === 1) {
-      const file = event.currentTarget.files[0]
-      dispatch(actions.itunes.setPlaylistName(file.name))
-    }
-  }
 
   return (
     <Navbar>
       <NavbarGroup>
         <Image priority width={30} height={30} style={{ marginRight: '10px' }} src={Logo} alt='Site logo' />
         <NavbarHeading>iTunes to Spotify</NavbarHeading>
-        <NavbarDivider />
-        {authenticated && (
-          <form action={handleFormSubmit}>
-            <FileInput fill text={playlistName || 'Choose iTunes playlist'} onInputChange={setPlaylistName} buttonText='Upload' />
-          </form>
-        )}
       </NavbarGroup>
 
       <NavbarGroup align={Alignment.RIGHT}>
@@ -53,7 +37,7 @@ export default function NavbarComponent ({ handleFormSubmit }) {
         />
         <NavbarDivider />
         {authenticated
-          ? <AnchorButton disabled={fetching} minimal icon='user' text={displayName} />
+          ? <AnchorButton loading={fetching} minimal icon='user' rightIcon='chevron-down'>{displayName}</AnchorButton>
           : <Link href='/login' prefetch={false} className='bp5-button bp5-minimal' role='button'>Login</Link>}
       </NavbarGroup>
     </Navbar>

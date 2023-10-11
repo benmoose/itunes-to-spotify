@@ -28,7 +28,7 @@ const fetchProfile = createAsyncThunk(
   }
 )
 
-export const { name, reducer, getInitialState } = createSlice({
+const slice = createSlice({
   name: 'profile',
   initialState,
   reducers: {
@@ -63,13 +63,16 @@ export const { name, reducer, getInitialState } = createSlice({
 })
 
 export const actions = {
+  ...slice.actions,
   fetchProfile
 }
 
-const scoped = selector => state => selector(state?.[name])
+const scoped = selector => state => selector(state?.[slice.name])
 export const selectors = {
   hasProfile: scoped(hasProfile),
   displayName: scoped(displayName),
   profileUrl: scoped(profileUrl),
   isFetching: scoped(isFetching)
 }
+
+export const { name, reducer, getInitialState } = slice

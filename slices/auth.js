@@ -44,7 +44,7 @@ const fetchAuthTokens = createAsyncThunk(
   }
 )
 
-export const { name, reducer, getInitialState } = createSlice({
+const slice = createSlice({
   name: 'auth',
   initialState,
   reducers: {
@@ -81,13 +81,16 @@ export const { name, reducer, getInitialState } = createSlice({
 })
 
 export const actions = {
+  ...slice.actions,
   fetchAuthTokens
 }
 
-const scoped = selector => state => selector(state?.[name])
+const scoped = selector => state => selector(state?.[slice.name])
 export const selectors = {
   authenticated: scoped(authenticated),
   accessToken: scoped(accessToken),
   refreshToken: scoped(refreshToken),
   isFetching: scoped(isFetching)
 }
+
+export const { name, reducer, getInitialState } = slice
