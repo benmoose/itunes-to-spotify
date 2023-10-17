@@ -44,3 +44,5 @@ export default function LoginCallbackPage ({ searchParams }) {
     </Navbar>
   )
 }
+
+export const dynamic = 'force-dynamic'

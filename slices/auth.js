@@ -1,11 +1,6 @@
 import { createAsyncThunk, createSelector, createSlice } from '@reduxjs/toolkit'
 import * as spotify from '../spotify'
-
-const utcSecondsNow = () => {
-  const now = new Date()
-  const utcMillis = now.getTime() - (now.getTimezoneOffset() * 60 * 1000)
-  return Math.ceil(utcMillis / 1000)
-}
+import * as utils from '../utils'
 
 const initialState = {
   accessToken: undefined,
@@ -27,20 +22,31 @@ const authenticated = (...args) => {
     (accessToken, expiryTime) => (
       typeof accessToken === 'string' && Number.isSafeInteger(expiryTime)
     )
-  )(...args) && expiryTime(...args) > utcSecondsNow()
+  )(...args) && expiryTime(...args) > utils.utcSecondsNow()
 }
 
 const fetchAuthTokens = createAsyncThunk(
   'auth/tokens',
   async ({ code }, { fulfillWithValue }) => {
     if (!code) {
-      throw Error('fetchAuthTokens: no code')
+      throw Error('error fetching auth tokens: no code')
     }
 
-    const requestSentAt = utcSecondsNow()
+    const requestSentAt = utils.utcSecondsNow()
     const tokens = await spotify.authTokens(code)
-
     return fulfillWithValue(tokens, { requestSentAt })
+  }
+)
+
+const refreshAuthTokens = createAsyncThunk(
+  'auth/refresh',
+  async (_, { getState }) => {
+    if (!refreshToken) {
+      throw Error('error refreshing auth tokens: no refresh token')
+    }
+
+    const { refreshToken } = getState().auth /// TODO: finish....
+    return spotify.refreshTokens({ refreshToken })
   }
 )
 
@@ -54,21 +60,21 @@ const slice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      .addCase(fetchAuthTokens.pending, (state = initialState, { meta }) => {
+      .addMatcher(action => action.type.endsWith('/pending'), (state = initialState, { meta }) => {
         if (isFetching(state)) {
           return state
         }
 
         return { ...state, fetching: meta.requestId }
       })
-      .addCase(fetchAuthTokens.rejected, (state = initialState, { error, meta }) => {
+      .addMatcher(action => action.type.endsWith('/rejected'), (state = initialState, { error, meta }) => {
         if (fetchingId(state) !== meta.requestId) {
           return state
         }
 
         return { ...state, error: error.message, fetching: undefined }
       })
-      .addCase(fetchAuthTokens.fulfilled, (state = initialState, { payload, meta }) => {
+      .addMatcher(action => action.type.endsWith('/fulfilled'), (state = initialState, { payload, meta }) => {
         if (fetchingId(state) !== meta.requestId) {
           return state
         }
@@ -82,7 +88,8 @@ const slice = createSlice({
 
 export const actions = {
   ...slice.actions,
-  fetchAuthTokens
+  fetchAuthTokens,
+  refreshAuthTokens
 }
 
 const scoped = selector => state => selector(state?.[slice.name])

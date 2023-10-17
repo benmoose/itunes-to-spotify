@@ -1,4 +1,4 @@
-import { createSlice } from '@reduxjs/toolkit'
+import { createSlice, createSelector } from '@reduxjs/toolkit'
 
 const initialState = {
   playlistName: undefined,
@@ -7,8 +7,8 @@ const initialState = {
 }
 
 const playlistName = state => state?.playlistName
-const tracksOrdered = state => state?.order?.map(id => state.repo[id])
-const tracksById = state => state?.repo
+const order = state => state?.order
+const repo = state => state?.repo
 
 export const { name, actions, reducer, getInitialState } = createSlice({
   name: 'itunes',
@@ -24,6 +24,6 @@ const scoped = selector => state => selector(state?.[name])
 
 export const selectors = {
   playlistName: scoped(playlistName),
-  tracksOrdered: scoped(tracksOrdered),
-  tracksById: scoped(tracksById)
+  tracksById: scoped(repo),
+  tracksOrdered: createSelector([scoped(order), scoped(repo)], (order, repo) => order.map(id => repo[id]))
 }

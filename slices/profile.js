@@ -1,6 +1,7 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit'
 import * as spotify from 'spotify'
-import { selectors as authSelectors } from './auth'
+import { selectors as authSelectors, actions as authActions } from './auth'
+import { refreshTokens } from 'spotify'
 
 const initialState = {
   id: undefined,
@@ -18,13 +19,30 @@ const isFetching = state => state?.fetching !== undefined
 
 const fetchProfile = createAsyncThunk(
   'profile/fetch',
-  async (_, { getState }) => {
+  async (_, { getState, dispatch }) => {
     const accessToken = authSelectors.accessToken(getState())
+    const refreshToken = authSelectors.refreshToken(getState())
     if (!accessToken) {
       throw Error('no access token')
     }
+    if (!refreshToken) {
+      throw Error('no refresh token')
+    }
 
-    return await spotify.profile({ accessToken })
+    return await spotify.profile({ accessToken, refreshToken })
+      .catch((res) => {
+        // if permission denied try once more after refreshing tokens.
+        if (res.status === 401) {
+          console.log('spotify api returned 401. refreshing auth tokens...')
+          return dispatch(authActions.refreshAuthTokens())
+            .unwrap()
+            .then(() => spotify.profile({
+              accessToken: authSelectors.accessToken(getState()),
+              refreshToken: authSelectors.refreshToken(getState())
+            }))
+        }
+        return Promise.reject(res)
+      })
   }
 )
 
