@@ -1,56 +1,30 @@
-import { createAsyncThunk, createSelector, createSlice } from '@reduxjs/toolkit'
+import { createAsyncThunk, createSelector, createSlice, isFulfilled, isRejected, isPending } from '@reduxjs/toolkit'
 import * as spotify from '../spotify'
 import * as utils from '../utils'
 
+const authEntity = (auth = {}) => ({
+  accessToken: '',
+  refreshToken: '',
+  scopes: '',
+  expiryTime: 0,
+  lastRefreshed: 0,
+  ...auth
+})
+
 const initialState = {
-  accessToken: undefined,
-  refreshToken: undefined,
-  scopes: undefined,
-  expiryTime: undefined,
-  fetching: undefined
+  auth: null,
+  fetchingId: ''
 }
 
-const accessToken = state => state?.accessToken
-const refreshToken = state => state?.refreshToken
-const expiryTime = state => state?.expiryTime
-const fetchingId = state => state?.fetching
-const isFetching = state => state?.fetching !== undefined
+const auth = auth => auth?.auth
+const accessToken = auth => auth(auth)?.accessToken
+const refreshToken = auth => auth(auth)?.refreshToken
+const expiryTime = auth => auth(auth)?.expiryTime
+const lastRefreshed = auth => auth(auth)?.lastRefreshed
+const fetchingId = auth => auth?.fetchingId
+const isFetching = auth => !!fetchingId(auth)
 
-const authenticated = (...args) => {
-  return createSelector(
-    [accessToken, expiryTime],
-    (accessToken, expiryTime) => (
-      typeof accessToken === 'string' && Number.isSafeInteger(expiryTime)
-    )
-  )(...args) && expiryTime(...args) > utils.utcSecondsNow()
-}
-
-const fetchAuthTokens = createAsyncThunk(
-  'auth/tokens',
-  async ({ code }, { fulfillWithValue }) => {
-    if (!code) {
-      throw Error('error fetching auth tokens: no code')
-    }
-
-    const requestSentAt = utils.utcSecondsNow()
-    const tokens = await spotify.authTokens(code)
-    return fulfillWithValue(tokens, { requestSentAt })
-  }
-)
-
-const refreshAuthTokens = createAsyncThunk(
-  'auth/refresh',
-  async (_, { getState }) => {
-    if (!refreshToken) {
-      throw Error('error refreshing auth tokens: no refresh token')
-    }
-
-    const { refreshToken } = getState().auth /// TODO: finish....
-    return spotify.refreshTokens({ refreshToken })
-  }
-)
-
-const slice = createSlice({
+export const slice = createSlice({
   name: 'auth',
   initialState,
   reducers: {
@@ -60,44 +34,77 @@ const slice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      .addMatcher(action => action.type.endsWith('/pending'), (state = initialState, { meta }) => {
+      .addMatcher(isPending(fetchTokens, refreshTokens), (state = initialState, { meta }) => {
         if (isFetching(state)) {
           return state
         }
 
-        return { ...state, fetching: meta.requestId }
+        return { ...state, fetchingId: meta.requestId }
       })
-      .addMatcher(action => action.type.endsWith('/rejected'), (state = initialState, { error, meta }) => {
+      .addMatcher(isRejected(fetchTokens, refreshTokens), (state = initialState, { error, meta }) => {
         if (fetchingId(state) !== meta.requestId) {
           return state
         }
 
-        return { ...state, error: error.message, fetching: undefined }
+        return { ...state, fetchingId: '' }
       })
-      .addMatcher(action => action.type.endsWith('/fulfilled'), (state = initialState, { payload, meta }) => {
+      .addMatcher(isFulfilled(fetchTokens, refreshTokens), (state = initialState, { payload, meta }) => {
         if (fetchingId(state) !== meta.requestId) {
           return state
         }
 
         const { expiresIn, ...tokens } = payload
-        const expiryTime = meta.requestSentAt + expiresIn
-        return { ...state, ...tokens, expiryTime, fetching: undefined }
+        const auth = authEntity({
+          ...tokens,
+          expiryTime: meta.requestStart + expiresIn,
+          lastRefreshed: utils.utcSecondsNow()
+        })
+
+        return { ...state, auth, fetchingId: '' }
       })
   }
 })
 
+const fetchTokens = createAsyncThunk(
+  'auth/tokens',
+  async (code, { fulfillWithValue }) => {
+    if (!code) {
+      throw Error('no code')
+    }
+
+    const requestStart = utils.utcSecondsNow()
+    const tokens = await spotify.authTokens(code)
+    return fulfillWithValue(tokens, { requestStart })
+  }
+)
+
+const refreshTokens = createAsyncThunk(
+  'auth/refresh',
+  async (_, { getState, fulfillWithValue }) => {
+    const refreshToken = selectors.refreshToken(getState())
+
+    if (!refreshToken) {
+      throw Error('no refresh token')
+    }
+
+    const requestStart = utils.utcSecondsNow()
+    const tokens = await spotify.refreshTokens({ refreshToken })
+    return fulfillWithValue(tokens, { requestStart })
+  }
+)
+
 export const actions = {
   ...slice.actions,
-  fetchAuthTokens,
-  refreshAuthTokens
+  fetchTokens,
+  refreshTokens
 }
 
-const scoped = selector => state => selector(state?.[slice.name])
+const scoped = selector => state => selector(state[slice.name])
 export const selectors = {
-  authenticated: scoped(authenticated),
+  auth: scoped(auth),
   accessToken: scoped(accessToken),
   refreshToken: scoped(refreshToken),
+  expiryTime: scoped(expiryTime),
+  lastRefreshed: scoped(lastRefreshed),
   isFetching: scoped(isFetching)
 }
-
-export const { name, reducer, getInitialState } = slice

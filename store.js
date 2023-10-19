@@ -1,30 +1,37 @@
 import { configureStore } from '@reduxjs/toolkit'
 import { combineReducers } from 'redux'
-import { FLUSH, PAUSE, PERSIST, PURGE, REGISTER, REHYDRATE, persistReducer, persistStore } from 'redux-persist'
+import { FLUSH, PAUSE, PERSIST, PURGE, REGISTER, REHYDRATE, persistReducer, persistStore, createTransform } from 'redux-persist'
 import { initialState, reducers } from 'slices'
 import storage from './storage'
 
-const developmentEnv = process.env.NODE_ENV !== 'production'
+const devNodeEnv = process.env.NODE_ENV !== 'production'
+
+const FetchingTransformer = createTransform(
+  ({ fetchingId, ...state }, key) => state,
+  undefined,
+  { whitelist: Object.keys(reducers) }
+)
 
 const rootReducer = persistReducer(
   {
     key: 'root',
-    debug: developmentEnv,
-    storage
+    storage,
+    debug: devNodeEnv,
+    transforms: [FetchingTransformer]
   },
   combineReducers(reducers)
 )
 
 export default function configure () {
   const store = configureStore({
-    devTools: developmentEnv,
     reducer: rootReducer,
     preloadedState: initialState,
     middleware: getDefaultMiddleware => getDefaultMiddleware({
       serializableCheck: {
         ignoreActions: [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER]
       }
-    })
+    }),
+    devTools: devNodeEnv
   })
   const persistor = persistStore(store)
 

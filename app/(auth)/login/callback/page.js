@@ -16,18 +16,17 @@ export default function LoginCallbackPage ({ searchParams }) {
   const dispatch = useDispatch()
   const router = useRouter()
 
-  const authenticated = useSelector(selectors.auth.authenticated)
+  const auth = useSelector(selectors.auth.auth)
   const { code } = searchParams
 
   useEffect(() => {
-    if (authenticated) {
-      router.replace('/')
-    } else {
-      dispatch(actions.auth.fetchAuthTokens({ code })).unwrap()
-        .then(() => dispatch(actions.profile.fetchProfile()).unwrap())
-        // todo: update UI with error
-        .catch(() => {})
+    if (auth) {
+      dispatch(actions.auth.fetchTokens(code))
+        .then(() => dispatch(actions.profile.fetchProfile()))
+        .then(res => console.log('>>', typeof res, res))
         .finally(() => router.replace('/'))
+    } else {
+      router.replace('/')
     }
   }, [code])
 

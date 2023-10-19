@@ -1,12 +1,12 @@
 import * as auth from './auth'
 import * as profile from './profile'
-import * as itunes from './itunes'
+import * as sources from 'slices/sources'
 
-const reduceSlices = (fn) => [auth, profile, itunes].reduce(
-  (acc, mod) => ({ ...acc, [mod.name]: fn(mod) }), {}
+const combineModules = (fn) => [auth, profile, sources].reduce(
+  (acc, mod) => ({ ...acc, [mod.slice.name]: fn(mod) }), {}
 )
 
-export const actions = reduceSlices(slice => slice.actions)
-export const initialState = reduceSlices(slice => slice.initialState)
-export const reducers = reduceSlices(slice => slice.reducer)
-export const selectors = reduceSlices(slice => slice.selectors)
+export const actions = combineModules(mod => mod.actions)
+export const initialState = combineModules(mod => mod.slice.getInitialState())
+export const reducers = combineModules(mod => mod.slice.reducer)
+export const selectors = combineModules(mod => mod.selectors)

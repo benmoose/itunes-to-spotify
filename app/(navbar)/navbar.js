@@ -15,7 +15,7 @@ import Logo from 'public/img/music.svg'
 import { selectors } from 'slices'
 
 export default function NavbarComponent () {
-  const authenticated = useSelector(selectors.auth.authenticated)
+  const auth = useSelector(selectors.auth.auth)
   const displayName = useSelector(selectors.profile.displayName)
   const fetching = useSelector(selectors.profile.isFetching)
 
@@ -36,10 +36,20 @@ export default function NavbarComponent () {
           href='https://github.com/benmoose/itunes-to-spotify'
         />
         <NavbarDivider />
-        {authenticated
+        {auth
           ? <AnchorButton loading={fetching} minimal icon='user' rightIcon='chevron-down'>{displayName}</AnchorButton>
           : <Link href='/login' prefetch={false} className='bp5-button bp5-minimal' role='button'>Login</Link>}
       </NavbarGroup>
     </Navbar>
   )
+}
+
+export function AuthenticationMenu () {
+  const auth = useSelector(selectors.auth.auth)
+  const profileLoading = useSelector(selectors.profile.isFetching)
+  const displayName = useSelector(selectors.profile.displayName)
+
+  return auth
+    ? <AnchorButton loading={profileLoading} minimal icon='user' rightIcon='chevron-down'>{displayName}</AnchorButton>
+    : <Link href='/login' prefetch={false} className='bp5-button bp5-minimal' role='button'>Login</Link>
 }

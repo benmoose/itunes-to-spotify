@@ -7,9 +7,9 @@ import { actions, selectors } from 'slices'
 export default function LogoutPage () {
   const dispatch = useDispatch()
   const router = useRouter()
-  const authenticated = useSelector(selectors.auth.authenticated)
+  const auth = useSelector(selectors.auth.auth)
 
-  if (authenticated) {
+  if (auth) {
     dispatch(actions.auth.destroy())
     dispatch(actions.profile.destroy())
   }

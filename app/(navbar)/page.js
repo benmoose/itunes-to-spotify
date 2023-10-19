@@ -7,9 +7,9 @@ import { actions, selectors } from 'slices'
 import styles from './styles.module.css'
 
 export default function HomePage () {
-  const authenticated = useSelector(selectors.auth.authenticated)
+  const auth = useSelector(selectors.auth.auth)
 
-  if (!authenticated) {
+  if (!auth) {
     return null
   }
 
@@ -18,37 +18,32 @@ export default function HomePage () {
   const handlePlaylistChange = useCallback((event) => {
     if (event.currentTarget.files.length === 1) {
       const file = event.currentTarget.files.item(0)
-      dispatch(actions.itunes.setPlaylistName(file.name))
-      console.log({ message: `Reading ${file.name}.`, intent: Intent.PRIMARY })
-    } else {
-      console.log({ message: 'Choose a single file.', intent: Intent.DANGER })
+      dispatch(actions.sources.setSources([{ name: file.name }]))
     }
   }, [])
 
-  const playlistName = useSelector(selectors.itunes.playlistName) || ''
-  const sourceTracks = useSelector(selectors.itunes.tracksOrdered)
+  const sources = useSelector(selectors.sources.sources)
 
-  if (sourceTracks.length === 0) {
+  if (sources.length === 0) {
     return (
-      <>
-        <section className={styles.sectionContainer}>
-          <ItunesPlaylistSelect
-            onPlaylistChange={handlePlaylistChange}
-            playlistName={playlistName}
-            trackCount={sourceTracks.length}
-            progress={0}
-          />
-
-          <Section
-            collapsible
-            collapseProps={{ defaultIsOpen: false, isOpen: false }}
-            icon='manually-entered-data'
-            title='Edit Spotify playlist'
-            rightElement={<ProgressBar animate={false} stripes={false} value={0.45} />}
-            elevation={Elevation.ZERO}
-            className={styles.section}
-          >
-            <SectionCard>
+      <section className={styles.sectionContainer}>
+        <ItunesPlaylistSelect
+          onPlaylistChange={handlePlaylistChange}
+          playlistName={sources.map(s => s.name).join(', ')}
+          sourceCount={sources.length}
+          progress={0}
+        />
+        <Section
+          // collapsible
+          collapseProps={{ isOpen: sources.length > 0 }}
+          icon='manually-entered-data'
+          title='Confirm conversion'
+          rightElement={<ProgressBar animate={false} stripes={false} value={0.45} />}
+          elevation={sources.length === 0 ? Elevation.ZERO : Elevation.ONE}
+          className={styles.section}
+        >
+          {sources.map(source => (
+            <SectionCard key={source.id} title={source.name || `source ${source.id}`}>
               <HTMLTable compact bordered={false}>
                 <thead>
                   <tr>
@@ -64,9 +59,9 @@ export default function HomePage () {
                 </tbody>
               </HTMLTable>
             </SectionCard>
-          </Section>
-        </section>
-      </>
+          ))}
+        </Section>
+      </section>
     )
   }
 
@@ -77,14 +72,12 @@ export default function HomePage () {
   )
 }
 
-const ItunesPlaylistSelect = ({ playlistName, trackCount, progress, onPlaylistChange }) => {
+const ItunesPlaylistSelect = ({ playlistName, sourceCount, progress, onPlaylistChange }) => {
   return (
     <Section
-      collapsible
-      collapseProps={{ defaultIsOpen: true }}
       icon='import'
       title='Import your iTunes playlist'
-      rightElement={`${trackCount} tracks`}
+      rightElement={sourceCount > 0 && `${sourceCount} ${sourceCount === 1 ? 'playlist' : 'playlists'} selected`}
       elevation={Elevation.ONE}
       className={styles.section}
     >
