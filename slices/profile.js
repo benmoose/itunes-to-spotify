@@ -2,11 +2,12 @@ import { createAsyncThunk, createSlice } from '@reduxjs/toolkit'
 import * as spotify from 'spotify'
 import { selectors as authSelectors, actions as authActions } from './auth'
 
-const buildProfile = (user = {}) => ({
+const buildProfile = (profile = {}) => ({
   id: '',
   displayName: '',
   profileUrl: '',
-  imageUrl: ''
+  imageUrl: '',
+  ...profile
 })
 
 const initialState = {
@@ -26,6 +27,7 @@ export const slice = createSlice({
   name: 'profile',
   initialState,
   reducers: {
+    set: (state = initialState, action) => ({ ...state, profile: buildProfile(action.payload) }),
     destroy: (state = initialState, action) => initialState
   },
   extraReducers: builder => {
@@ -70,15 +72,6 @@ const fetchProfile = createAsyncThunk(
     }
 
     const profile = await spotify.profile(auth)
-      .then((res) => {
-        if (res.error && res.status === 401) {
-          console.log('>>> profile', 'refreshing tokens')
-          return dispatch(authActions.refreshTokens())
-            .then(() => spotify.profile(authSelectors.auth(getState())))
-        }
-
-        return res
-      })
 
     if (profile.error) {
       rejectWithValue(profile)

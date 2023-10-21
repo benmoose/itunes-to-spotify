@@ -1,7 +1,7 @@
 import 'normalize.css/normalize.css'
 import '@blueprintjs/core/lib/css/blueprint.css'
 import '@blueprintjs/icons/lib/css/blueprint-icons.css'
-import styles from './styles.modue.css'
+import Providers from 'app/providers'
 
 export const metadata = {
   title: {
@@ -13,8 +13,10 @@ export const metadata = {
 export default function RootLayout ({ children }) {
   return (
     <html lang='en'>
-      <body className={styles.body}>
-        {children}
+      <body>
+        <Providers>
+          {children}
+        </Providers>
       </body>
     </html>
   )

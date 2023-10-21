@@ -2,12 +2,12 @@ import { createAsyncThunk, createSelector, createSlice, isFulfilled, isRejected,
 import * as spotify from '../spotify'
 import * as utils from '../utils'
 
-const authEntity = (auth = {}) => ({
+const buildAuth = (auth = {}) => ({
   accessToken: '',
   refreshToken: '',
-  scopes: '',
+  scope: '',
   expiryTime: 0,
-  lastRefreshed: 0,
+  lastRefreshed: utils.utcSecondsNow(),
   ...auth
 })
 
@@ -28,52 +28,53 @@ export const slice = createSlice({
   name: 'auth',
   initialState,
   reducers: {
+    set: (state, action) => ({ ...state, auth: buildAuth(action.payload) }),
     destroy: (state, action) => {
       return initialState
     }
-  },
-  extraReducers: (builder) => {
-    builder
-      .addMatcher(isPending(fetchTokens, refreshTokens), (state = initialState, { meta }) => {
-        if (isFetching(state)) {
-          return state
-        }
-
-        return { ...state, fetchingId: meta.requestId }
-      })
-      .addMatcher(isRejected(fetchTokens, refreshTokens), (state = initialState, { error, meta }) => {
-        if (fetchingId(state) !== meta.requestId) {
-          return state
-        }
-
-        return { ...state, fetchingId: '' }
-      })
-      .addMatcher(isFulfilled(fetchTokens, refreshTokens), (state = initialState, { payload, meta }) => {
-        if (fetchingId(state) !== meta.requestId) {
-          return state
-        }
-
-        const { expiresIn, ...tokens } = payload
-        const auth = authEntity({
-          ...tokens,
-          expiryTime: meta.requestStart + expiresIn,
-          lastRefreshed: utils.utcSecondsNow()
-        })
-
-        return { ...state, auth, fetchingId: '' }
-      })
   }
+  // extraReducers: (builder) => {
+  //   builder
+  //     .addMatcher(isPending(fetchTokens, refreshTokens), (state = initialState, { meta }) => {
+  //       if (isFetching(state)) {
+  //         return state
+  //       }
+  //
+  //       return { ...state, fetchingId: meta.requestId }
+  //     })
+  //     .addMatcher(isRejected(fetchTokens, refreshTokens), (state = initialState, { error, meta }) => {
+  //       if (fetchingId(state) !== meta.requestId) {
+  //         return state
+  //       }
+  //
+  //       return { ...state, fetchingId: '' }
+  //     })
+  //     .addMatcher(isFulfilled(fetchTokens, refreshTokens), (state = initialState, { payload, meta }) => {
+  //       if (fetchingId(state) !== meta.requestId) {
+  //         return state
+  //       }
+  //
+  //       const { expiresIn, ...tokens } = payload
+  //       const auth = authEntity({
+  //         ...tokens,
+  //         expiryTime: meta.requestStart + expiresIn,
+  //         lastRefreshed: utils.utcSecondsNow()
+  //       })
+  //
+  //       return { ...state, auth, fetchingId: '' }
+  //     })
+  // }
 })
 
 const fetchTokens = createAsyncThunk(
   'auth/tokens',
-  async (code, { fulfillWithValue }) => {
+  async ({ code }, { fulfillWithValue }) => {
     if (!code) {
       throw Error('no code')
     }
 
     const requestStart = utils.utcSecondsNow()
-    const tokens = await spotify.authTokens(code)
+    const tokens = await spotify.accountsAuth(code)
     return fulfillWithValue(tokens, { requestStart })
   }
 )
@@ -88,7 +89,7 @@ const refreshTokens = createAsyncThunk(
     }
 
     const requestStart = utils.utcSecondsNow()
-    const tokens = await spotify.refreshTokens({ refreshToken })
+    const tokens = await spotify.accountsRefresh({ refreshToken })
     return fulfillWithValue(tokens, { requestStart })
   }
 )

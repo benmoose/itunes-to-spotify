@@ -8,7 +8,7 @@ const devNodeEnv = process.env.NODE_ENV !== 'production'
 
 const FetchingTransformer = createTransform(
   ({ fetchingId, ...state }, key) => state,
-  undefined,
+  state => state,
   { whitelist: Object.keys(reducers) }
 )
 

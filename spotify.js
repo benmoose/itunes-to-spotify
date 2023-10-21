@@ -1,8 +1,10 @@
 'use server'
 
 import qs from 'querystring'
+import { utcSecondsNow } from 'utils'
 
-export async function profile ({ accessToken, refreshToken }) {
+export async function
+profile ({ accessToken, refreshToken }) {
   return api({ accessToken, refreshToken }, process.env.SPOTIFY_PROFILE_URL)
     .then((res) => {
       if (!res.ok) {
@@ -13,13 +15,12 @@ export async function profile ({ accessToken, refreshToken }) {
         }
       }
 
-      const data = res.json()
-      return {
+      return res.json().then(data => ({
         id: data.id,
         images: data.images,
         displayName: data.display_name,
         profileUrl: data?.external_urls?.spotify
-      }
+      }))
     })
     .catch(err => ({
       status: 500,
@@ -28,7 +29,8 @@ export async function profile ({ accessToken, refreshToken }) {
     }))
 }
 
-export async function authTokens (code) {
+export async function accountsAuth (code) {
+  const timeNow = utcSecondsNow()
   const body = {
     code,
     grant_type: 'authorization_code',
@@ -38,16 +40,26 @@ export async function authTokens (code) {
   return accounts(process.env.SPOTIFY_AUTH_TOKEN_URL, {
     body: qs.encode(body)
   })
-    .then(res => res.ok ? res.json() : { error: `spotify-client status ${res.status}`, status: res.status })
-    .then(data => ({
-      accessToken: data.access_token,
-      refreshToken: data.refresh_token,
-      expiresIn: data.expires_in,
-      scopes: data.scopes
-    }))
+    .then((res) => {
+      if (!res.ok) {
+        return {
+          status: res.status,
+          message: `spotify-client accounts: ${res.statusText}`,
+          error: true
+        }
+      }
+
+      return res.json().then(data => ({
+        accessToken: data.access_token,
+        refreshToken: data.refresh_token,
+        expiryTime: timeNow + data.expires_in,
+        scope: data.scope
+      }))
+    })
 }
 
-export async function refreshTokens ({ refreshToken }) {
+export async function accountsRefresh ({ refreshToken }) {
+  const timeNow = utcSecondsNow()
   const body = {
     refresh_token: refreshToken,
     grant_type: 'refresh_token'
@@ -56,17 +68,22 @@ export async function refreshTokens ({ refreshToken }) {
   return accounts(process.env.SPOTIFY_AUTH_TOKEN_URL, {
     body: qs.encode(body)
   })
-    .then(res => res.json())
-    .then(data => {
-      console.log('>>>>> refresh', data)
-      return data
+    .then((res) => {
+      if (!res.ok) {
+        return {
+          status: res.status,
+          message: `spotify-client accounts refresh: ${res.statusText}`,
+          error: true
+        }
+      }
+
+      return res.json().then(data => ({
+        accessToken: data.access_token,
+        refreshToken: data.refresh_token,
+        expiryTime: timeNow + data.expires_in,
+        scope: data.scope
+      }))
     })
-    .then(data => ({
-      accessToken: data.access_token,
-      refreshToken: data.refresh_token,
-      expiresIn: data.expires_in,
-      scopes: data.scopes
-    }))
 }
 
 export async function userAuthorizationUrl () {
@@ -89,8 +106,8 @@ export async function userAuthorizationUrl () {
 function api ({ accessToken, refreshToken }, pathname = '/', config = {}) {
   const { headers, ...rest } = config
   const defaults = { method: 'GET' }
-  const endpoint = new URL(pathname, process.env.SPOTIFY_API_ORIGIN)
 
+  const endpoint = new URL(pathname, process.env.SPOTIFY_API_ORIGIN)
   const reqConfig = {
     ...defaults,
     ...rest,
@@ -107,12 +124,11 @@ function api ({ accessToken, refreshToken }, pathname = '/', config = {}) {
 function accounts (pathname, config = {}) {
   const { headers, ...rest } = config
   const defaults = { method: 'POST' }
-  const endpoint = new URL(pathname, process.env.SPOTIFY_AUTH_ORIGIN)
-
   const base64ClientAuth = Buffer.from(
     `${process.env.SPOTIFY_CLIENT_ID}:${process.env.SPOTIFY_CLIENT_SECRET}`
   ).toString('base64url')
 
+  const endpoint = new URL(pathname, process.env.SPOTIFY_AUTH_ORIGIN)
   const reqConfig = {
     ...defaults,
     ...rest,

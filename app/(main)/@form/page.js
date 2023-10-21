@@ -1,34 +1,35 @@
 'use client'
 
-import { Section, HTMLTable, Elevation, Intent, FormGroup, FileInput, SectionCard, ProgressBar } from '@blueprintjs/core'
-import { useCallback } from 'react'
-import { useDispatch, useSelector } from 'react-redux'
-import { actions, selectors } from 'slices'
-import styles from './styles.module.css'
+import { useSelector } from 'react-redux'
+import { selectors } from 'slices'
+import styles from './form.module.css'
+import {
+  Elevation,
+  FileInput,
+  FormGroup,
+  HTMLTable,
+  Intent,
+  ProgressBar,
+  Section,
+  SectionCard
+} from '@blueprintjs/core'
 
-export default function HomePage () {
-  const auth = useSelector(selectors.auth.auth)
-
-  if (!auth) {
-    return null
-  }
-
-  const dispatch = useDispatch()
-
-  const handlePlaylistChange = useCallback((event) => {
-    if (event.currentTarget.files.length === 1) {
-      const file = event.currentTarget.files.item(0)
-      dispatch(actions.sources.setSources([{ name: file.name }]))
-    }
-  }, [])
+export default function FormPage () {
+  // const handlePlaylistChange = useCallback((event) => {
+  //   if (event.currentTarget.files.length === 1) {
+  //     const file = event.currentTarget.files.item(0)
+  //     dispatch(actions.sources.setSources([{ name: file.name }]))
+  //   }
+  // }, [])
 
   const sources = useSelector(selectors.sources.sources)
 
-  if (sources.length === 0) {
+  if (sources?.length === 0) {
     return (
-      <section className={styles.sectionContainer}>
+      <section>
         <ItunesPlaylistSelect
-          onPlaylistChange={handlePlaylistChange}
+          // onPlaylistChange={handlePlaylistChange}
+          onPlaylistChange={console.log}
           playlistName={sources.map(s => s.name).join(', ')}
           sourceCount={sources.length}
           progress={0}
