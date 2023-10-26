@@ -1,12 +1,12 @@
 import styles from './styles.module.css'
 
-export default function Layout ({ navbar, form }) {
+export default function Layout ({ children, navbar }) {
   return (
-    <div className={styles.app}>
+    <>
       {navbar}
       <main className={styles.main}>
-        {form}
+        {children}
       </main>
-    </div>
+    </>
   )
 }
