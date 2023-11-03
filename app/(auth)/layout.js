@@ -1,4 +1,3 @@
-import Providers from 'app/providers'
 import AppSkeleton from 'app/skeleton'
 
 export default function AuthLayout ({ children }) {

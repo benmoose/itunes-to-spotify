@@ -34,6 +34,8 @@ export default function NavbarPage () {
           target='_blank'
           rel='external nofollow'
           href='https://github.com/benmoose/itunes-to-spotify'
+          hrefLang='x-default'
+          lang='en'
         />
         <NavbarDivider />
         <ProfileMenu loading={loading} profile={profile} />

@@ -74,7 +74,7 @@ const fetchProfile = createAsyncThunk(
     const profile = await spotify.profile(auth)
 
     if (profile.error) {
-      rejectWithValue(profile)
+      return rejectWithValue(profile)
     }
 
     return profile

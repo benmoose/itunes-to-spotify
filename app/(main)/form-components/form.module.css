@@ -1,7 +1,13 @@
-.progress {
-    margin: 0 0 20px;
+.progressSection {
+    display: flex;
+    align-items: center;
+    /*margin: 0 0 10px;*/
 }
 
 .section {
     margin: 0 0 10px;
+}
+
+.table {
+    width: 100%;
 }

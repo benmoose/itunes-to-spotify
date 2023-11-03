@@ -3,9 +3,33 @@
 import qs from 'querystring'
 import { utcSecondsNow } from 'utils'
 
-export async function
-profile ({ accessToken, refreshToken }) {
-  return api({ accessToken, refreshToken }, process.env.SPOTIFY_PROFILE_URL)
+export async function search (auth, search) {
+  const query = new URLSearchParams({
+    q: search,
+    type: 'track'
+  })
+
+  return api(auth, process.env.SPOTIFY_SEARCH_URL + `?${query.toString()}`)
+    .then((res) => {
+      if (!res.ok) {
+        return {
+          status: res.status,
+          message: `spotify-client search: ${res.statusText}`,
+          error: true
+        }
+      }
+
+      return res.json()
+    })
+    .catch(err => ({
+      status: 500,
+      message: `spotify-client search: server error (${err.toString()})`,
+      error: true
+    }))
+}
+
+export async function profile (auth) {
+  return api(auth, process.env.SPOTIFY_PROFILE_URL)
     .then((res) => {
       if (!res.ok) {
         return {
@@ -58,10 +82,10 @@ export async function accountsAuth (code) {
     })
 }
 
-export async function accountsRefresh ({ refreshToken }) {
+export async function accountsRefresh (auth) {
   const timeNow = utcSecondsNow()
   const body = {
-    refresh_token: refreshToken,
+    refresh_token: auth.refreshToken,
     grant_type: 'refresh_token'
   }
 
@@ -103,7 +127,7 @@ export async function userAuthorizationUrl () {
 }
 
 // api makes calls to Spotify's API.
-function api ({ accessToken, refreshToken }, pathname = '/', config = {}) {
+function api (auth, pathname = '/', config = {}) {
   const { headers, ...rest } = config
   const defaults = { method: 'GET' }
 
@@ -112,7 +136,7 @@ function api ({ accessToken, refreshToken }, pathname = '/', config = {}) {
     ...defaults,
     ...rest,
     headers: {
-      Authorization: `Bearer ${accessToken}`,
+      Authorization: `Bearer ${auth.accessToken}`,
       ...headers
     }
   }

@@ -27,7 +27,7 @@ const initialState = {
 const parse = createAsyncThunk(
   'sources/parse',
   (fileTarget, thunkApi) => {
-    const ps = []
+    const promises = []
 
     for (const file of fileTarget.files) {
       const p = new Promise((resolve, reject) => {
@@ -36,7 +36,7 @@ const parse = createAsyncThunk(
           delimiter: '\t',
           transformHeader: header => header.toLowerCase(),
           complete: (results, file) => {
-            const tracks = results.data.map(buildSourceTrack)
+            const tracks = results.data.map(buildSourceTrack).filter(track => track.name && track.artist)
             const source = buildSource({
               name: file.name,
               order: tracks.map(track => track.id),
@@ -50,10 +50,10 @@ const parse = createAsyncThunk(
         })
       })
 
-      ps.push(p)
+      promises.push(p)
     }
 
-    return Promise.all(ps)
+    return Promise.all(promises)
       .then((sources) => {
         const order = sources.map(source => source.id)
         thunkApi.dispatch(actions.setOrder(order))
@@ -69,8 +69,11 @@ export const slice = createSlice({
   name: 'sources',
   initialState,
   reducers: {
-    setOrder: (state, action) => {
+    setOrder: (state = initialState, action) => {
       return { ...state, order: action.payload }
+    },
+    reset: (state = initialState, action) => {
+      return initialState
     }
   },
   extraReducers: (builder) => {
@@ -93,7 +96,7 @@ export const actions = {
 }
 
 const sources = createSelector(
-  [state => state.sources.order, state => state.sources.sources],
+  [state => state[slice.name].order, state => state[slice.name].sources],
   (order, sources) => {
     return order.filter(id => sources.hasOwnProperty(id)).map(id => sources[id])
   }

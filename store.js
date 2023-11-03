@@ -1,7 +1,7 @@
 import { configureStore } from '@reduxjs/toolkit'
 import { combineReducers } from 'redux'
 import { FLUSH, PAUSE, PERSIST, PURGE, REGISTER, REHYDRATE, persistReducer, persistStore, createTransform } from 'redux-persist'
-import { initialState, reducers } from 'slices'
+import { initialState, reducers, name } from 'slices'
 import storage from './storage'
 
 const devNodeEnv = process.env.NODE_ENV !== 'production'
@@ -9,7 +9,7 @@ const devNodeEnv = process.env.NODE_ENV !== 'production'
 const FetchingTransformer = createTransform(
   ({ fetchingId, ...state }, key) => state,
   state => state,
-  { whitelist: Object.keys(reducers) }
+  { blacklist: [name.sources, name.spotify] }
 )
 
 const rootReducer = persistReducer(
