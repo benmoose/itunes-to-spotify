@@ -1,0 +1,9 @@
+.main {
+    margin: 20px auto 0;
+    padding: 0 20px;
+}
+
+.sectionContainer {
+    display: flex;
+    flex-direction: column;
+}

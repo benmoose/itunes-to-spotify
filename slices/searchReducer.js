@@ -10,7 +10,10 @@ const initialState = {}
 export default (state = initialState, action) => {
   switch (action.type) {
     case TRACK_SEARCH_REQUEST:
-      return { ...state, [action.payload.trackID]: { isFetching: true } }
+      return {
+        ...state,
+        [action.payload.trackID]: { isFetching: true }
+      }
 
     case TRACK_SEARCH_SUCCESS:
       const { ...data } = action.payload
